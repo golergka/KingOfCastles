@@ -40,7 +40,7 @@ public class VisionDelegate : MonoBehaviour {
 
 		} else {
 		
-			this.radius = vision.visionDistance;
+			this.radius = vision.initialVisionDistance;
 
 		}
 

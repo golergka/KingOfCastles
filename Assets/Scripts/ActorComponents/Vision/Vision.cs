@@ -18,13 +18,15 @@ public class Vision : MonoBehaviour {
 	[HideInInspector] public List<Visible> invisiblesInSight = new List<Visible>();
 
 	// vision settings
-	public float visionDistance = 5f;
+	public float initialVisionDistance = 5f;
 
 	Component[] visionListeners;
 
 	void Start() {
 
 		GameObject triggerObject = new GameObject("visionTrigger");
+		triggerObject.transform.parent = this.transform;
+		triggerObject.transform.localPosition = new Vector3(0, 0, 0);
 		triggerObject.AddComponent<VisionDelegate>();
 		visionListeners = GetComponents(typeof(IVisionListener));
 
@@ -103,6 +105,18 @@ public class Vision : MonoBehaviour {
 			SendLostMessage(visible);
 
 		}
+
+	}
+
+	void OnDrawGizmos() {
+
+		Gizmos.color = Color.red;
+		foreach(Visible visible in invisiblesInSight)
+			Gizmos.DrawLine(transform.position, visible.transform.position);
+
+		Gizmos.color = Color.green;
+		foreach(Visible visible in visiblesInSight)
+			Gizmos.DrawLine(transform.position, visible.transform.position);
 
 	}
 
