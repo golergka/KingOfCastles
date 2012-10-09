@@ -6,5 +6,7 @@ Temp
 *.exe
 *.vcproject
 *.sln
+*.sublime-project
+*.sublime-workspace
 
 .DS_Store
