@@ -6,3 +6,5 @@ Temp
 *.exe
 *.vcproject
 *.sln
+
+.DS_Store
