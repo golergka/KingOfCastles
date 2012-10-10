@@ -62,10 +62,16 @@ public class Health : MonoBehaviour {
 		}
 	}
 
+	public uint initialHealthPoints = 100;
+	public uint initialMaxHealthPoints = 100;
+
 	private Component[] healthChangeListeners;
 	private Component[] healthStateListeners;
 
 	void Start() {
+
+		_healthPoints = initialHealthPoints;
+		_maxHealhPoints = initialMaxHealthPoints;
 
 		healthChangeListeners = GetComponents(typeof(IHealthChangeListener));
 		healthStateListeners = GetComponents(typeof(IHealthStateListener));
