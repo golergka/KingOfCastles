@@ -6,7 +6,7 @@ public abstract class LocalPlayerController : PlayerController {
 
 	public static LocalPlayerController localPlayer;
 
-	virtual void Start() {
+	public virtual void Start() {
 
 		LocalPlayerController.localPlayer = this;
 
