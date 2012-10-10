@@ -25,12 +25,9 @@ public class Visible : MonoBehaviour {
 
 			_visible = value;
 
-			if ( value ) {
+			foreach(Vision vision in inRangeOfVisions)
+				vision.ChangedVisibility(this);
 
-				foreach(Vision vision in inRangeOfVisions)
-					vision.ChangedVisibility(this);
-
-			}
 
 		}
 
