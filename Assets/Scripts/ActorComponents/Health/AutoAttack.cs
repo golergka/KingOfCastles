@@ -62,7 +62,7 @@ public class AutoAttack : MonoBehaviour, IVisionListener {
 	public void OnNoticed(Visible observee) {
 
 		// проверка свой-чужой
-		if (observee.CompareTag(tag))
+		if ( !FoFSystem.AreEnemies(this, observee) )
 			return;
 
 		// проверка на наличие здоровья, которое можно атаковать
