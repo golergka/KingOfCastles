@@ -81,8 +81,10 @@ public class Health : MonoBehaviour {
 	public void InflictDamage(uint damageAmount) {
 
 		if ( damageAmount == 0 ) {
+
 			Debug.LogWarning("Received 0 damage!");
 			return;
+			
 		}
 
 		if ( damageAmount >= _healthPoints ) {
