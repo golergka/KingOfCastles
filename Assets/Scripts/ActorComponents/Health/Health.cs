@@ -120,4 +120,12 @@ public class Health : MonoBehaviour {
 
 	}
 
+	private void OnDrawGizmos() {
+
+		Gizmos.color = Color.Lerp( Color.red, Color.green, ( (float) _healthPoints / (float) _maxHealhPoints ) );
+		Vector3 uplift = new Vector3(0f, 2f, 0f);
+		Gizmos.DrawSphere( transform.position + uplift, 0.3F );
+
+	}
+
 }
