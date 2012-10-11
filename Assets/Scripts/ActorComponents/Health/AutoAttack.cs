@@ -9,6 +9,8 @@ interface IAutoAttackListener {
 
 }
 
+[RequireComponent(typeof(Vision))]
+
 public class AutoAttack : MonoBehaviour, IVisionListener {
 
 	private Component[] autoAttackListeners;
@@ -47,41 +49,56 @@ public class AutoAttack : MonoBehaviour, IVisionListener {
 
 	private float lastAttackTime = 0f;
 
-	Health currentTarget; // текущая цель
-	bool appointedTarget = false; // была ли текущая цель кем-то указана специально
+	private Health currentTarget; // текущая цель
+	private bool appointedTarget = false; // была ли текущая цель кем-то указана специально
+
+	private Vision vision;
 
 	void Start() {
 
 		_attackRange = initialAttackRange;
 		autoAttackListeners = GetComponents(typeof(IAutoAttackListener));
+		vision = GetComponent<Vision>();
 
 	}
 
-	private List<Health> potentialTargets = new List<Health>();
-
 	public void OnNoticed(Visible observee) {
 
-		// проверка свой-чужой
+		// если у нас уже есть цель, пофигу
+		if ( currentTarget != null )
+			return;
+
+		// если это не враг нам, пофигу
 		if ( !FoFSystem.AreEnemies(this, observee) )
 			return;
 
-		// проверка на наличие здоровья, которое можно атаковать
+		// если на нём нет здоровья, которое можно атаковать, пофигу
 		Health target = observee.GetComponent<Health>();
-		if (target != null)
-			potentialTargets.Add(target);
+		if (target == null)
+			return;
 
-		// если у нас нет текущей цели и эта подходит, то атаковать
-		if ( currentTarget == null && CheckTarget(currentTarget) )
+		// если подходит, то атакуем
+		if ( CheckTarget(currentTarget) )
 			currentTarget = target;
+
+	}
+
+	public void OnLost(Visible observee) {
+
+		Health target = observee.GetComponent<Health>();
+		if ( target != null && target == currentTarget )
+			LoseCurrentTarget();
 
 	}
 
 	// найти какую-нибудь подходящую цель из потенциальных
 	private void FindSomeTarget() {
 
-		foreach(Health target in potentialTargets) {
+		foreach(Visible observee in vision.visiblesInSight) {
 
-			if (CheckTargetRange(target)) {
+			Health target = observee.GetComponent<Health>();
+
+			if (target != null && CheckTarget(target)) {
 				currentTarget = target;
 				break;
 			}
@@ -105,39 +122,17 @@ public class AutoAttack : MonoBehaviour, IVisionListener {
 
 	}
 
-	public void OnLost(Visible observee) {
-
-		if (observee.CompareTag(tag))
-			return;
-
-		Health target = observee.GetComponent<Health>();
-		if (target != null)
-			potentialTargets.Remove(target);
-
-		if ( target == currentTarget )
-			LoseCurrentTarget();
-
-	}
-
-	// для использования на членах списка potentialTargets или currentTarget
-	private bool CheckTargetRange( Health target ) {
-
-		return ( transform.position - target.transform.position).magnitude < attackRange;
-
-	}
-
 	// true если цель можно сейчас атаковать
-	// для использования снаружи, можно использовать на любой Health
 	public bool CheckTarget( Health target ) {
 
-		return
-			(
+		if ( target == null ) {
 
-				potentialTargets.Contains(target)
-				&& 
-				CheckTargetRange(target)
+			Debug.LogWarning("Received null target!");
+			return false;
 
-			);
+		}
+
+		return ( transform.position - target.transform.position ).magnitude < attackRange;
 
 	}
 
@@ -170,7 +165,7 @@ public class AutoAttack : MonoBehaviour, IVisionListener {
 		if ( Time.time - lastAttackTime > period ) {
 
 			// валидна ли ещё текущая цель
-			if (!CheckTargetRange(currentTarget))
+			if (!CheckTarget(currentTarget))
 				LoseCurrentTarget();
 
 			if (currentTarget == null)
