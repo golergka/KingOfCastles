@@ -10,9 +10,25 @@ interface ILegsListener {
 
 public abstract class Legs : MonoBehaviour {
 
-	Component[] legsListeners;
+	public float targetReachDistance = 0.1f;
 
-	public virtual void Start() {
+	private Component[] legsListeners;
+
+	protected bool moving = false;
+	private Vector2 _target;
+	public Vector2 target {
+
+		get { return _target; }
+
+		set {
+
+			_target = value;
+			moving = true;
+
+		}
+	}
+
+	protected virtual void Start() {
 
 		legsListeners = GetComponents(typeof(ILegsListener));
 
@@ -25,10 +41,27 @@ public abstract class Legs : MonoBehaviour {
 
 	}
 
-	private void SendTargetUnreachableMessage() {
+	protected void SendTargetUnreachableMessage() {
 
 		foreach(Component listener in legsListeners)
-			((ILegsListener).listener).OnTargetUnreachable();
+			((ILegsListener)listener).OnTargetUnreachable();
+
+	}
+
+	protected abstract void StopMovement();
+
+	protected void CheckTargetReach() {
+
+		if (!moving)
+			return;
+
+		if ( (TerrainCoordinates.TerrainToGlobal(target) - transform.position).magnitude < targetReachDistance ) {
+
+			moving = false;
+			SendTargetReachMessage();
+			StopMovement();
+
+		}
 
 	}
 
