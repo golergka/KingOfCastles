@@ -24,6 +24,7 @@ public class WalkingLegs : Legs {
 			desiredVelocity *= speed * speedPercentage;
 
 		Vector3 velocityChange = desiredVelocity - rigidbody.velocity;
+		velocityChange.y = 0; // не влияем на вертикальную компоненту
 		rigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
 
 	}
@@ -83,7 +84,10 @@ public class WalkingLegs : Legs {
 
 	protected override void StopMovement() {
 
-		rigidbody.AddForce(-rigidbody.velocity, ForceMode.VelocityChange);
+		Vector3 stopVector = -rigidbody.velocity;
+		stopVector.y = 0;
+
+		rigidbody.AddForce(stopVector, ForceMode.VelocityChange);
 
 	}
 

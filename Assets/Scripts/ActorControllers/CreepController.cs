@@ -96,6 +96,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 			if (attack.CheckTarget(target)) {
 
 				attack.AppointTarget(target);
+				legs.FollowTarget(target.rigidbody);
 				return true;
 
 			}
@@ -276,7 +277,9 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 
 			case ActiveOrder.Idle:
 
-				TryFindTarget();
+				if (!TryFindTarget())
+					legs.Stop();
+
 				break;
 
 			case ActiveOrder.Hold:
