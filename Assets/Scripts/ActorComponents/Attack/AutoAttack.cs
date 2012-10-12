@@ -2,18 +2,9 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-interface IAutoAttackListener {
-
-	// отсылается только когда AutoAttack теряет цель, выбранную специально
-	void OnLooseApointedTarget();
-
-}
-
 [RequireComponent(typeof(Vision))]
 
-public class AutoAttack : MonoBehaviour, IVisionListener {
-
-	private Component[] autoAttackListeners;
+public class AutoAttack : Attack, IVisionListener {
 
 	private float _attackRange;
 	public float attackRange {
@@ -44,20 +35,17 @@ public class AutoAttack : MonoBehaviour, IVisionListener {
 
 	}
 	public float initialAttackRange; // исходный радиус атаки
-	public uint damage; // количество урона
 	public float period; // период атаки
 
 	private float lastAttackTime = 0f;
 
-	private Health currentTarget; // текущая цель
-	private bool appointedTarget = false; // была ли текущая цель кем-то указана специально
-
 	private Vision vision;
 
-	void Start() {
+	protected override void Start() {
+
+		base.Start();
 
 		_attackRange = initialAttackRange;
-		autoAttackListeners = GetComponents(typeof(IAutoAttackListener));
 		vision = GetComponent<Vision>();
 
 	}
@@ -68,17 +56,10 @@ public class AutoAttack : MonoBehaviour, IVisionListener {
 		if ( currentTarget != null )
 			return;
 
-		// если это не враг нам, пофигу
-		if ( !FoFSystem.AreEnemies(this, observee) )
-			return;
-
-		// если на нём нет здоровья, которое можно атаковать, пофигу
 		Health target = observee.GetComponent<Health>();
-		if (target == null)
-			return;
 
 		// если подходит, то атакуем
-		if ( CheckTarget(currentTarget) )
+		if ( CheckTarget(target) )
 			currentTarget = target;
 
 	}
@@ -107,37 +88,30 @@ public class AutoAttack : MonoBehaviour, IVisionListener {
 
 	}
 
-	// потерять текущую цель
+
+
+	// true если цель можно сейчас атаковать
+	public override bool CheckTarget( Health target ) {
+
+		return base.CheckTarget(target) && ( rigidbody.position - target.rigidbody.position ).magnitude < attackRange;
+
+	}
+
 	private void LoseCurrentTarget() {
 
-		if (appointedTarget) { // если нам её назначили, то сбросить этот флаг и отправить сообщение
+		if (appointedTarget) {
 
 			appointedTarget = false;
-			foreach(Component listener in autoAttackListeners)
-				((IAutoAttackListener)listener).OnLooseApointedTarget();
+			SendLostAppointedTargetMessage();
 
 		}
 
 		currentTarget = null;
-
-	}
-
-	// true если цель можно сейчас атаковать
-	public bool CheckTarget( Health target ) {
-
-		if ( target == null ) {
-
-			Debug.LogWarning("Received null target!");
-			return false;
-
-		}
-
-		return ( transform.position - target.transform.position ).magnitude < attackRange;
-
+		
 	}
 
 	// назначить цель снаружи
-	public void AppointTarget( Health target ) {
+	public override void AppointTarget( Health target ) {
 
 		// эти проверки нужны только для отладки, при релизе можно отключить
 
@@ -176,7 +150,7 @@ public class AutoAttack : MonoBehaviour, IVisionListener {
 
 			// а теперь применение урона
 
-			currentTarget.InflictDamage(damage);
+			ApplyDamage();
 			lastAttackTime = Time.time;
 
 		}

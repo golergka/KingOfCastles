@@ -41,4 +41,22 @@ public class Visible : MonoBehaviour {
 
 	}
 
+	void OnDestroy() {
+
+		visible = false;
+
+	}
+
+	void OnDisable() {
+
+		visible = false;
+
+	}
+
+	void OnEnable() {
+
+		visible = true;
+
+	}
+
 }

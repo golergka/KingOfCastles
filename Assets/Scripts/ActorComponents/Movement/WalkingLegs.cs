@@ -6,10 +6,6 @@ using System.Collections;
 public class WalkingLegs : Legs {
 
 	public float speed = 1f;
-	public float closeTargetDistance = 1f;
-
-	public float angularRotate = 0.02f;
-	public float magnitudeRotate = 5f;
 
 	// Use this for initialization
 	override protected void Start () {
@@ -17,17 +13,71 @@ public class WalkingLegs : Legs {
 		base.Start();
 	
 	}
-	
-	void FixedUpdate() {
-		
-		CheckTargetReach();
 
-		if (!moving)
-			return; // могло измеинться при проверке
+	private void MoveTowards(Vector3 position, float speedPercentage = 1f) {
 
-		Vector3 desiredVelocity = (TerrainCoordinates.TerrainToGlobal(target) - rigidbody.position).normalized * speed;
+		Vector3 desiredVelocity = (position - rigidbody.position).normalized;
+
+		if (speedPercentage == 1f) // чуток чрезмерной оптимизации
+			desiredVelocity *= speed;
+		else
+			desiredVelocity *= speed * speedPercentage;
+
 		Vector3 velocityChange = desiredVelocity - rigidbody.velocity;
 		rigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
+
+	}
+	
+	void FixedUpdate() {
+
+		// если нам ничего не надо делать — то нам ничего не надо делать
+		if (legsState == LegsState.Idle)
+			return;
+
+		// во всех случаях кроме преследования мы ещё должны проверить состояние, и оно может измениться
+		if (legsState != LegsState.FollowingRigidbody)
+			CheckTargetReach();
+
+		switch(legsState) {
+
+			case LegsState.MovingToPosition:
+
+				MoveTowards(TerrainCoordinates.TerrainToGlobal(targetPosition));
+				break;
+
+			case LegsState.PursuingRigidbody:
+
+				MoveTowards(targetRigidbody.position);
+				break;
+
+			case LegsState.FollowingRigidbody:
+
+				float distance = (targetRigidbody.position - rigidbody.position).magnitude;
+
+				if ( distance > targetRigidbodyFollowDistance ) {
+				
+					MoveTowards(targetRigidbody.position);
+
+				} else if ( distance > targetRigidbodyFollowBumpDistance) {
+					
+					float speedMultipler = (distance - targetRigidbodyFollowBumpDistance) /
+					(targetRigidbodyFollowDistance - targetRigidbodyFollowBumpDistance);
+
+					MoveTowards(targetRigidbody.position, speedMultipler );
+
+				} else {
+
+					StopMovement();
+
+				}
+
+				break;
+
+			default:
+				Debug.LogError("Unknown state!");
+				break;
+
+		}
 
 	}
 

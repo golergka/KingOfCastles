@@ -3,8 +3,8 @@ using System.Collections;
 
 interface IHealthChangeListener {
 
-	void OnTakeDamage(uint damageAmount);
-	void OnTakeHealing(uint healingAmount);
+	void OnTakeDamage(int damageAmount);
+	void OnTakeHealing(int healingAmount);
 
 }
 
@@ -17,8 +17,8 @@ interface IHealthStateListener {
 
 public class Health : MonoBehaviour {
 
-	private uint _healthPoints;
-	public uint healthPoints {
+	private int _healthPoints;
+	public int healthPoints {
 
 		get { return _healthPoints; }
 
@@ -38,8 +38,8 @@ public class Health : MonoBehaviour {
 
 	}
 
-	private uint _maxHealhPoints;
-	public uint maxHealthPoints {
+	private int _maxHealhPoints;
+	public int maxHealthPoints {
 
 		get { return _maxHealhPoints; }
 
@@ -62,8 +62,8 @@ public class Health : MonoBehaviour {
 		}
 	}
 
-	public uint initialHealthPoints = 100;
-	public uint initialMaxHealthPoints = 100;
+	public int initialHealthPoints = 100;
+	public int initialMaxHealthPoints = 100;
 
 	private Component[] healthChangeListeners;
 	private Component[] healthStateListeners;
@@ -78,7 +78,7 @@ public class Health : MonoBehaviour {
 
 	}
 
-	public void InflictDamage(uint damageAmount) {
+	public void InflictDamage(int damageAmount) {
 
 		if ( damageAmount == 0 ) {
 
@@ -87,20 +87,29 @@ public class Health : MonoBehaviour {
 			
 		}
 
+		bool zeroHealth = false;
+
 		if ( damageAmount >= _healthPoints ) {
 
 			_healthPoints = 0;
-			foreach(Component listener in healthStateListeners)
-				((IHealthStateListener)listener).OnZeroHealth();
+			zeroHealth = true;
+
+		} else {
+
+			_healthPoints -= damageAmount;
 
 		}
 
 		foreach(Component listener in healthChangeListeners)
 			((IHealthChangeListener)listener).OnTakeDamage(damageAmount);
 
+		if (zeroHealth)
+			foreach(Component listener in healthStateListeners)
+				((IHealthStateListener)listener).OnZeroHealth();
+
 	}
 
-	public void InflictHealing(uint healingAmount) {
+	public void InflictHealing(int healingAmount) {
 
 		if ( healingAmount == 0 ) {
 
