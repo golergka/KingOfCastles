@@ -20,7 +20,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 	// Цель. Всегда находится в пределах видимости.
 	private Health targetVictim;
 
-	private enum ActiveOrder {
+	private enum CreepOrder {
 
 		Idle,
 		/*
@@ -69,7 +69,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 
 	};
 
-	private ActiveOrder activeOrder = ActiveOrder.Idle;
+	private CreepOrder activeOrder = CreepOrder.Idle;
 
 	void Start() {
 
@@ -120,7 +120,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 
 	public void Move(Vector2 position) {
 
-		activeOrder = ActiveOrder.Move;
+		activeOrder = CreepOrder.Move;
 		targetPosition = position;
 		legs.targetPosition = targetPosition;
 		targetVictim = null;
@@ -129,7 +129,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 
 	public void MoveAttack(Vector2 position) {
 
-		activeOrder = ActiveOrder.MoveAttack;
+		activeOrder = CreepOrder.MoveAttack;
 		targetPosition = position;
 		targetVictim = null;
 		FindTargetOrCarryOn();
@@ -141,7 +141,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 		if (!attack.CheckTarget(target))
 			return;
 
-		activeOrder = ActiveOrder.Attack;
+		activeOrder = CreepOrder.Attack;
 		targetVictim = target;
 		attack.AppointTarget(targetVictim);
 		legs.FollowTarget(target.rigidbody);
@@ -151,7 +151,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 	public void Patrol(Vector2 position) {
 
 		patrolPosition = TerrainCoordinates.GlobalToTerrain(rigidbody.position);
-		activeOrder = ActiveOrder.Patrol;
+		activeOrder = CreepOrder.Patrol;
 		targetVictim = null;
 		FindTargetOrCarryOn();
 
@@ -159,7 +159,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 
 	public void Stop() {
 
-		activeOrder = ActiveOrder.Idle;
+		activeOrder = CreepOrder.Idle;
 		legs.Stop();
 		targetVictim = null;
 		TryFindTarget();
@@ -168,7 +168,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 
 	public void Hold() {
 
-		activeOrder = ActiveOrder.Hold;
+		activeOrder = CreepOrder.Hold;
 		targetPosition = TerrainCoordinates.GlobalToTerrain(rigidbody.position);
 		targetVictim = null;
 		TryFindTarget();
@@ -186,7 +186,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 			return;
 
 		// если мы двигаемся не замечая никого, нам похуй
-		if (activeOrder == ActiveOrder.Move)
+		if (activeOrder == CreepOrder.Move)
 			return;
 
 		Health target = observee.GetComponent<Health>();
@@ -218,32 +218,32 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 
 		switch(activeOrder) {
 
-			case ActiveOrder.Idle:
+			case CreepOrder.Idle:
 
 				Debug.LogWarning("Unexpected target reach event for state Idle!");
 				break;
 
-			case ActiveOrder.Hold:
+			case CreepOrder.Hold:
 				
 				// Вернулись на место, отдыхаем.
 				break;
 
-			case ActiveOrder.Move:
+			case CreepOrder.Move:
 
-				activeOrder = ActiveOrder.Idle;
+				activeOrder = CreepOrder.Idle;
 				break;
 
-			case ActiveOrder.MoveAttack:
+			case CreepOrder.MoveAttack:
 
-				activeOrder = ActiveOrder.Idle;
+				activeOrder = CreepOrder.Idle;
 				break;
 
-			case ActiveOrder.Attack:
+			case CreepOrder.Attack:
 
 				Debug.LogWarning("Unexpected target reach event for state Attack!");
 				break;
 
-			case ActiveOrder.Patrol:
+			case CreepOrder.Patrol:
 
 				Vector2 exchangePosition = targetPosition;
 				targetPosition = patrolPosition;
@@ -275,36 +275,36 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 
 		switch(activeOrder) {
 
-			case ActiveOrder.Idle:
+			case CreepOrder.Idle:
 
 				if (!TryFindTarget())
 					legs.Stop();
 
 				break;
 
-			case ActiveOrder.Hold:
+			case CreepOrder.Hold:
 
 				FindTargetOrCarryOn();
 				break;
 
-			case ActiveOrder.Move:
+			case CreepOrder.Move:
 
 				Debug.LogWarning("Unexpected lost appointed target event for move state!");
 				break;
 
-			case ActiveOrder.MoveAttack:
+			case CreepOrder.MoveAttack:
 
 				FindTargetOrCarryOn();
 				break;
 
-			case ActiveOrder.Attack:
+			case CreepOrder.Attack:
 
-				activeOrder = ActiveOrder.Idle;
+				activeOrder = CreepOrder.Idle;
 				TryFindTarget();
 
 				break;
 
-			case ActiveOrder.Patrol:
+			case CreepOrder.Patrol:
 				
 				FindTargetOrCarryOn();
 				break;

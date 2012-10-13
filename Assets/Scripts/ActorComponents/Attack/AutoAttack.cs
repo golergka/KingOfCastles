@@ -134,12 +134,21 @@ public class AutoAttack : Attack, IVisionListener {
 
 	}
 
+	public override void DropTarget() {
+
+		if (appointedTarget)
+			appointedTarget = false;
+
+		currentTarget = null;
+
+	}
+
 	void Update() {
 
 		if ( Time.time - lastAttackTime > period ) {
 
 			// валидна ли ещё текущая цель
-			if (!CheckTarget(currentTarget))
+			if (currentTarget != null && !CheckTarget(currentTarget))
 				LoseCurrentTarget();
 
 			if (currentTarget == null)

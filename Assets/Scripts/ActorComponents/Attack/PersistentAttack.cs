@@ -31,6 +31,12 @@ public class PersistentAttack : Attack, IVisionListener {
 		currentTarget = target;
 
 	}
+
+	public override void DropTarget() {
+
+		currentTarget = null;
+
+	}
 	
 	// Update is called once per frame
 	void Update () {

@@ -36,6 +36,8 @@ public abstract class Attack : MonoBehaviour {
 
 	public abstract void AppointTarget( Health target );
 
+	public abstract void DropTarget();
+
 	// весь код по вычислению реального урона должен жить здесь
 	protected void ApplyDamage() {
 

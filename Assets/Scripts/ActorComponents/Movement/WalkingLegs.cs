@@ -41,6 +41,9 @@ public class WalkingLegs : Legs {
 
 		switch(legsState) {
 
+			case LegsState.Idle:
+				break;
+
 			case LegsState.MovingToPosition:
 
 				MoveTowards(TerrainCoordinates.TerrainToGlobal(targetPosition));
