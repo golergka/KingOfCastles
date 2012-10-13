@@ -38,7 +38,6 @@ public abstract class Attack : MonoBehaviour {
 
 	public abstract void DropTarget();
 
-	// весь код по вычислению реального урона должен жить здесь
 	protected void ApplyDamage() {
 
 		currentTarget.InflictDamage( damage );
