@@ -5,7 +5,7 @@ using System.Collections;
 [RequireComponent(typeof(Vision))]
 [RequireComponent(typeof(Attack))]
 
-public class CreepController : ActorController, IVisionListener, ILegsListener, IAttackListener, IHealthStateListener {
+public class CreepController : ActorController, IVisionListener, ILegsListener, IAttackListener {
 
 	// ссылки на компоненты
 	private Legs legs;
@@ -322,22 +322,6 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 	public void OnApplyDamage() {
 
 		// Нам похуй.
-
-	}
-
-	//
-	// IHealthStateListener
-	//
-
-	public void OnFullHealth() {
-
-		// Нам похуй снова.
-
-	}
-
-	public void OnZeroHealth() {
-
-		gameObject.active = false;
 
 	}
 
