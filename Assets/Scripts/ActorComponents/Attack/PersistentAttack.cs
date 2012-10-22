@@ -3,10 +3,10 @@ using System.Collections;
 
 public class PersistentAttack : Attack, IVisionListener {
 
-	public float attackRange;
-	public float period;
+	public DTRMLong attackRange = new DTRMLong(3);
+	public DTRMLong period = new DTRMLong(1);
 
-	private float lastAttackTime = 0f;
+	private DTRMLong lastAttackTime = new DTRMLong();
 
 	public void OnNoticed(Visible observee) {
 
@@ -39,20 +39,37 @@ public class PersistentAttack : Attack, IVisionListener {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	public override void DTRMUpdate () {
 
 		if ( currentTarget == null )
 			return;
 
-		if (
-			Time.time - lastAttackTime > period &&
-			( rigidbody.position - currentTarget.rigidbody.position ).magnitude < attackRange
-			) {
+		DTRMLong timePassed = DTRM.singleton.dtrmTime - lastAttackTime;
 
-			ApplyDamage();
-			lastAttackTime = Time.time;
+		if ( timePassed < period )
+			return;
+
+		DTRMLong targetDistance = ( myPosition.position - currentTarget.myPosition.position ).magnitude;
+
+		if ( targetDistance > attackRange )
+			return;
+
+		ApplyDamage();
+		lastAttackTime = DTRM.singleton.dtrmTime;
+	
+	}
+
+	public override int GetHashCode() {
+
+		unchecked {
+
+			int hash = 17;
+			hash = hash * 23 + base.GetHashCode();
+			hash = hash * 23 + attackRange.GetHashCode();
+			hash = hash * 23 + period.GetHashCode();
+			return hash;
 
 		}
-	
+
 	}
 }

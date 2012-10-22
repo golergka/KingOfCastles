@@ -12,7 +12,7 @@ interface IAttackListener {
 // подклассы меняют алгоритм нахождения цели, но не расчёт урона
 // работа с дальностью атаки ведётся в под-классах
 // работа с периодом урона ведётся в под-классах
-public abstract class Attack : MonoBehaviour {
+public abstract class Attack : DTRMComponent {
 
 	protected Health currentTarget; // текущая цель
 	protected bool appointedTarget = false; // была ли текущая цель кем-то указана специально
@@ -21,7 +21,7 @@ public abstract class Attack : MonoBehaviour {
 
 	private Component[] attackListeners;
 
-	protected virtual void Start() {
+	public override void DTRMStart() {
 
 		attackListeners = GetComponents(typeof(IAttackListener));
 
@@ -38,7 +38,6 @@ public abstract class Attack : MonoBehaviour {
 
 	public abstract void DropTarget();
 
-	// весь код по вычислению реального урона должен жить здесь
 	protected void ApplyDamage() {
 
 		currentTarget.InflictDamage( damage );
@@ -58,6 +57,20 @@ public abstract class Attack : MonoBehaviour {
 		}
 
 		return ( FoFSystem.AreEnemies(this, target) );
+
+	}
+
+	public override int GetHashCode() {
+
+		unchecked {
+
+			int hash = 17;
+			hash = hash * 23 + damage.GetHashCode();
+			hash = hash * 23 + currentTarget.GetHashCode();
+			hash = hash * 23 + appointedTarget.GetHashCode();
+			return hash;
+
+		}
 
 	}
 

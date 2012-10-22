@@ -17,4 +17,12 @@ public class TerrainCoordinates : MonoBehaviour {
 
 	}
 
+	static public Vector3 ToTerrain(Vector3 coordinates, float lift = 0f) {
+
+		Vector3 result = coordinates;
+		result.y = Terrain.activeTerrain.SampleHeight(result) + lift;
+		return result;
+
+	}
+
 }

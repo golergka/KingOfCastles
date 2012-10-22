@@ -9,7 +9,9 @@ interface IVisibleListener {
 
 }
 
-public class Visible : MonoBehaviour {
+public class Visible : DTRMComponent {
+
+	public static List<Visible> allVisibles = new List<Visible>();
 
 	// all visions that have me in range. They may actually not see me if I'm invisible
 	public List<Vision> inRangeOfVisions = new List<Vision>();
@@ -35,9 +37,10 @@ public class Visible : MonoBehaviour {
 
 	public bool visibleOnStart = true;
 
-	void Start() {
+	public override void DTRMStart() {
 
 		visible = visibleOnStart;
+		allVisibles.Add(this);
 
 	}
 
