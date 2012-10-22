@@ -52,4 +52,18 @@ public class AoEAttack : MonoBehaviour {
 
 	}
 
+	public override int GetHashCode() {
+
+		unchecked { // thank you Jon Skeet!
+
+			int hash = 17;
+			hash = hash * 23 + base.GetHashCode();
+			hash = hash * 23 + damage.GetHashCode();
+			hash = hash * 23 + attackRange.GetHashCode();
+			return hash;
+
+		}
+
+	}
+
 }

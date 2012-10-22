@@ -13,9 +13,9 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 	private Attack attack;
 
 	// Позиция на карте, являющаяся целью крипа. Смысл и использование отличается в зависимости от состояния.
-	private Vector2 targetPosition;
+	private DTRMVector2 targetPosition;
 	// Позиция на карте, использующаяся для патрулирования. При других приказах кроме Patrol не используется.
-	private Vector2 patrolPosition;
+	private DTRMVector2 patrolPosition;
 
 	// Цель. Всегда находится в пределах видимости.
 	private Health targetVictim;
@@ -71,11 +71,15 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 
 	private CreepOrder activeOrder = CreepOrder.Idle;
 
-	void Start() {
+	public override void DTRMStart() {
 
 		legs = GetComponent<Legs>();
 		vision = GetComponent<Vision>();
 		attack = GetComponent<Attack>();
+
+	}
+
+	public override void DTRMUpdate() {
 
 	}
 
@@ -96,7 +100,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 			if (attack.CheckTarget(target)) {
 
 				attack.AppointTarget(target);
-				legs.FollowTarget(target.rigidbody);
+				legs.FollowTarget(target.GetComponent<DTRMPosition>());
 				return true;
 
 			}
@@ -118,7 +122,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 	// Приказы
 	//
 
-	public void Move(Vector2 position) {
+	public void Move(DTRMVector2 position) {
 
 		activeOrder = CreepOrder.Move;
 		targetPosition = position;
@@ -127,7 +131,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 
 	}
 
-	public void MoveAttack(Vector2 position) {
+	public void MoveAttack(DTRMVector2 position) {
 
 		activeOrder = CreepOrder.MoveAttack;
 		targetPosition = position;
@@ -144,13 +148,13 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 		activeOrder = CreepOrder.Attack;
 		targetVictim = target;
 		attack.AppointTarget(targetVictim);
-		legs.FollowTarget(target.rigidbody);
+		legs.FollowTarget(target.myPosition);
 
 	}
 
 	public void Patrol(Vector2 position) {
 
-		patrolPosition = TerrainCoordinates.GlobalToTerrain(rigidbody.position);
+		patrolPosition = myPosition.position;
 		activeOrder = CreepOrder.Patrol;
 		targetVictim = null;
 		FindTargetOrCarryOn();
@@ -169,7 +173,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 	public void Hold() {
 
 		activeOrder = CreepOrder.Hold;
-		targetPosition = TerrainCoordinates.GlobalToTerrain(rigidbody.position);
+		targetPosition = myPosition.position;
 		targetVictim = null;
 		TryFindTarget();
 
@@ -198,7 +202,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 			return;
 
 		attack.AppointTarget(target);
-		legs.FollowTarget(target.rigidbody);
+		legs.FollowTarget(target.myPosition);
 		targetVictim = target;
 
 	}
@@ -245,7 +249,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 
 			case CreepOrder.Patrol:
 
-				Vector2 exchangePosition = targetPosition;
+				DTRMVector2 exchangePosition = targetPosition;
 				targetPosition = patrolPosition;
 				patrolPosition = exchangePosition;
 				legs.targetPosition = targetPosition;
