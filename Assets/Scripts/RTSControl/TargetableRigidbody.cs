@@ -5,7 +5,10 @@ public class TargetableRigidbody : MonoBehaviour {
 
 	void OnMouseUpAsButton() {
 
-		LocalPlayerController.localPlayer.GiveTarget(rigidbody);
+		DTRMPosition position = GetComponent<DTRMPosition>();
+
+		if(position != null)
+			LocalPlayerController.localPlayer.GiveTarget(position);
 
 	}
 

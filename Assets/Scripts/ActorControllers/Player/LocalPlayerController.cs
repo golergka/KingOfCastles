@@ -6,14 +6,14 @@ public abstract class LocalPlayerController : PlayerController {
 
 	public static LocalPlayerController localPlayer;
 
-	protected virtual void Start() {
+	public override void DTRMStart() {
 
 		LocalPlayerController.localPlayer = this;
 
 	}
 
-	public abstract void GiveTarget(Rigidbody target);
+	public abstract void GiveTarget(DTRMPosition target);
 
-	public abstract void GiveTarget(Vector2 target);
+	public abstract void GiveTarget(DTRMVector2 target);
 
 }

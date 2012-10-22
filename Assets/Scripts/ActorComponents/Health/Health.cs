@@ -15,7 +15,7 @@ interface IHealthStateListener {
 
 }
 
-public class Health : MonoBehaviour {
+public class Health : DTRMComponent {
 
 	private int _healthPoints;
 	public int healthPoints {
@@ -68,7 +68,7 @@ public class Health : MonoBehaviour {
 	private Component[] healthChangeListeners;
 	private Component[] healthStateListeners;
 
-	void Start() {
+	public override void DTRMStart() {
 
 		_healthPoints = initialHealthPoints;
 		_maxHealhPoints = initialMaxHealthPoints;
@@ -137,6 +137,23 @@ public class Health : MonoBehaviour {
 		Vector3 uplift = new Vector3(0f, 2f, 0f);
 		Gizmos.DrawSphere( transform.position + uplift, 0.3F );
 
+	}
+
+	public override int GetHashCode() {
+
+		unchecked {
+
+			int hash = 17;
+			hash = hash * 23 + _healthPoints.GetHashCode();
+			hash = hash * 23 + _maxHealhPoints.GetHashCode();
+			return hash;
+
+		}
+
+	}
+
+	public override void DTRMUpdate() {
+		
 	}
 
 }

@@ -25,11 +25,11 @@ public class RTSLocalPlayerController : LocalPlayerController, IAttackListener, 
 	private PlayerOrder activeOrder = PlayerOrder.Idle;
 
 	private Health targetVictim;
-	private Vector2 targetPosition;
+	private DTRMVector2 targetPosition;
 
-	protected override void Start() {
+	public override void DTRMStart() {
 
-		base.Start();
+		base.DTRMStart();
 		
 		if (targetPositionMark != null)
 			targetPositionMark.active = false;
@@ -63,7 +63,7 @@ public class RTSLocalPlayerController : LocalPlayerController, IAttackListener, 
 	// LocalPlayerController
 	//
 
-	public override void GiveTarget(Rigidbody target) {
+	public override void GiveTarget(DTRMPosition target) {
 
 		if (target == null)
 			return;
@@ -77,18 +77,18 @@ public class RTSLocalPlayerController : LocalPlayerController, IAttackListener, 
 
 		activeOrder = PlayerOrder.Attacking;
 		attack.AppointTarget(targetHealth);
-		legs.FollowTarget(target.rigidbody);
+		legs.FollowTarget(target);
 
 	}
 
-	public override void GiveTarget(Vector2 target) {
+	public override void GiveTarget(DTRMVector2 target) {
 
 		activeOrder = PlayerOrder.Moving;
 		attack.DropTarget();
 		legs.targetPosition = target;
 
 		targetPositionMark.active = true;
-		targetPositionMark.transform.position = TerrainCoordinates.TerrainToGlobal(target, targetPositionMarkLift);
+		targetPositionMark.transform.position = TerrainCoordinates.TerrainToGlobal(target.ToVector2(), targetPositionMarkLift);
 
 	}
 

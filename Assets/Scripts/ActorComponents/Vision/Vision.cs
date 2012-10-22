@@ -9,7 +9,7 @@ interface IVisionListener {
 	
 }
 
-public class Vision : MonoBehaviour {
+public class Vision : DTRMComponent {
 
 	// visibles in sight
 	[HideInInspector] public List<Visible> visiblesInSight = new List<Visible>();
@@ -18,16 +18,12 @@ public class Vision : MonoBehaviour {
 	[HideInInspector] public List<Visible> invisiblesInSight = new List<Visible>();
 
 	// vision settings
-	public float initialVisionDistance = 5f;
+	public DTRMLong visionDistance = new DTRMLong(10);
 
 	Component[] visionListeners;
 
-	void Start() {
+	public override void DTRMStart() {
 
-		GameObject triggerObject = new GameObject("visionTrigger");
-		triggerObject.transform.parent = this.transform;
-		triggerObject.transform.localPosition = new Vector3(0, 0, 0);
-		triggerObject.AddComponent<VisionDelegate>();
 		visionListeners = GetComponents(typeof(IVisionListener));
 
 	}
@@ -46,65 +42,83 @@ public class Vision : MonoBehaviour {
 
 	}
 
-	public void ColliderEnter(Collider other) {
-
-		Visible otherVisible = other.GetComponent<Visible>();
-
-		if (otherVisible == null)
-			return;
-
-		otherVisible.inRangeOfVisions.Add(this);
-
-		if (otherVisible.visible) {
-
-			visiblesInSight.Add(otherVisible);
-			SendNoticedMessage(otherVisible);
-
-		} else {
-
-			invisiblesInSight.Add(otherVisible);
-
-		}
-
-	}
-
-	public void ColliderExit(Collider other) {
-
-		Visible otherVisible = other.GetComponent<Visible>();
-
-		if (otherVisible == null)
-			return;
-
-		otherVisible.inRangeOfVisions.Remove(this);
-
-		if (otherVisible.visible) {
-
-			visiblesInSight.Remove(otherVisible);
-			SendLostMessage(otherVisible);
-
-		} else {
-
-			invisiblesInSight.Remove(otherVisible);
-
-		}
-
-	}
-
 	public void ChangedVisibility(Visible visible) {
 
 		if (visible.visible) {
 
 			invisiblesInSight.Remove(visible);
 			visiblesInSight.Add(visible);
-			SendNoticedMessage(visible);
+			// SendNoticedMessage(visible);
 
 		} else {
 
 			visiblesInSight.Remove(visible);
 			invisiblesInSight.Add(visible);
+			// SendLostMessage(visible);
+
+		}
+
+	}
+
+	public override void DTRMUpdate() {
+
+		// TODO : OPTIMIZE!!! EXTREMELY SLOW AND STUPID IMPLEMENTATION
+
+		List<Visible> newVisiblesInSight = new List<Visible>();
+		List<Visible> newInvisiblesInSight = new List<Visible>();
+
+		foreach(Visible visible in Visible.allVisibles ) {
+
+			if ( myPosition.Distance(visible.myPosition) < visionDistance ) {
+
+				if (visible.visible) {
+					newVisiblesInSight.Add(visible);
+				} else {
+					newInvisiblesInSight.Add(visible);
+				}
+
+			}
+
+		}
+
+		foreach(Visible visible in newVisiblesInSight) { // ugly
+
+			if (visiblesInSight.Contains(visible))
+				continue;
+
+			if (invisiblesInSight.Contains(visible))
+				continue;
+
+			SendNoticedMessage(visible);
+
+		}
+
+		foreach(Visible visible in visiblesInSight) { // very ugly
+
+			if (newVisiblesInSight.Contains(visible))
+				continue;
+
+			if (newInvisiblesInSight.Contains(visible))
+				continue;
+
 			SendLostMessage(visible);
 
 		}
+
+		foreach(Visible visible in invisiblesInSight) { // EXTREMELY ugly. OK. But gets job done
+
+			if (newVisiblesInSight.Contains(visible))
+				continue;
+
+			if (newInvisiblesInSight.Contains(visible))
+				continue;
+
+			SendLostMessage(visible);
+
+		}
+
+		visiblesInSight = newVisiblesInSight;
+		invisiblesInSight = newInvisiblesInSight;
 
 	}
 

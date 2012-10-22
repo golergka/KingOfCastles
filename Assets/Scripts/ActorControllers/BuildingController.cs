@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections;
 
-public class BuildingController : ActorController {
+public abstract class BuildingController : ActorController {
 
 }

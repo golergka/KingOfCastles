@@ -1,42 +1,60 @@
 using UnityEngine;
 using System.Collections;
 
-[RequireComponent (typeof (Rigidbody))]
-
 public class WalkingLegs : Legs {
 
-	public float speed = 1f;
+	public int defaultSpeed = 1;
 
-	// Use this for initialization
-	override protected void Start () {
+	public DTRMLong speed;
 
-		base.Start();
-	
-	}
+	private DTRMVector2 velocity = DTRMVector2.zero;
 
-	private void MoveTowards(Vector3 position, float speedPercentage = 1f) {
+	private void MoveAccordingToSpeed() {
 
-		Vector3 desiredVelocity = (position - rigidbody.position).normalized;
-
-		if (speedPercentage == 1f) // чуток чрезмерной оптимизации
-			desiredVelocity *= speed;
-		else
-			desiredVelocity *= speed * speedPercentage;
-
-		Vector3 velocityChange = desiredVelocity - rigidbody.velocity;
-		velocityChange.y = 0; // не влияем на вертикальную компоненту
-		rigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
+		myPosition.position += velocity * DTRM.singleton.dtrmDeltaTime;
 
 	}
-	
-	void FixedUpdate() {
+
+	private void MoveTowards(DTRMVector2 targetMovePosition) {
+
+		DTRMVector2 desiredVelocity = (targetMovePosition - myPosition.position).normalized;
+		desiredVelocity *= speed;
+		velocity = desiredVelocity;
+
+		MoveAccordingToSpeed();
+
+	}
+
+	private void MoveTowards(DTRMVector2 targetMovePosition, DTRMLong speedPercentage) {
+
+		DTRMVector2 desiredVelocity = (targetMovePosition - myPosition.position).normalized;
+		desiredVelocity *= speed;
+		desiredVelocity *= speedPercentage;
+		velocity = desiredVelocity;
+
+		MoveAccordingToSpeed();
+
+	}
+
+	protected override void StopMovement() {
+
+	}
+
+	public override void DTRMStart() {
+
+		base.DTRMStart();
+		speed = new DTRMLong(defaultSpeed);
+
+	}
+
+	public override void DTRMUpdate() {
 
 		// если нам ничего не надо делать — то нам ничего не надо делать
 		if (legsState == LegsState.Idle)
 			return;
 
 		// во всех случаях кроме преследования мы ещё должны проверить состояние, и оно может измениться
-		if (legsState != LegsState.FollowingRigidbody)
+		if (legsState != LegsState.FollowingTarget)
 			CheckTargetReach();
 
 		switch(legsState) {
@@ -46,28 +64,42 @@ public class WalkingLegs : Legs {
 
 			case LegsState.MovingToPosition:
 
-				MoveTowards(TerrainCoordinates.TerrainToGlobal(targetPosition));
+				DTRMLong sqDistance = (targetPosition - myPosition.position).sqrMagnitude;
+
+				if ( sqDistance > dtrmSqTargetPositionClose ) {
+
+					MoveTowards(targetPosition);
+
+				} else if ( sqDistance > dtrmSqTargetPositionReach ) {
+
+					DTRMLong speedMultipler = (sqDistance - dtrmSqTargetPositionReach) /
+						(dtrmSqTargetPositionClose - dtrmSqTargetPositionReach);
+
+					MoveTowards(targetPosition, speedMultipler);
+
+				}
+
 				break;
 
-			case LegsState.PursuingRigidbody:
+			case LegsState.PursuingTarget:
 
-				MoveTowards(targetRigidbody.position);
+				MoveTowards(targetActor.position);
 				break;
 
-			case LegsState.FollowingRigidbody:
+			case LegsState.FollowingTarget:
 
-				float distance = (targetRigidbody.position - rigidbody.position).magnitude;
+				sqDistance = (targetActor.position - myPosition.position).sqrMagnitude;
 
-				if ( distance > targetRigidbodyFollowDistance ) {
+				if ( sqDistance > dtrmSqTargetActorFollow ) {
 				
-					MoveTowards(targetRigidbody.position);
+					MoveTowards(targetActor.position);
 
-				} else if ( distance > targetRigidbodyFollowBumpDistance) {
+				} else if ( sqDistance > dtrmSqTargetActorBump) {
 					
-					float speedMultipler = (distance - targetRigidbodyFollowBumpDistance) /
-					(targetRigidbodyFollowDistance - targetRigidbodyFollowBumpDistance);
+					DTRMLong speedMultipler = (sqDistance - dtrmSqTargetActorBump) /
+						(dtrmSqTargetActorFollow - dtrmSqTargetActorBump);
 
-					MoveTowards(targetRigidbody.position, speedMultipler );
+					MoveTowards(targetActor.position, speedMultipler );
 
 				} else {
 
@@ -82,15 +114,6 @@ public class WalkingLegs : Legs {
 				break;
 
 		}
-
-	}
-
-	protected override void StopMovement() {
-
-		Vector3 stopVector = -rigidbody.velocity;
-		stopVector.y = 0;
-
-		rigidbody.AddForce(stopVector, ForceMode.VelocityChange);
 
 	}
 
