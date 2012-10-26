@@ -5,7 +5,40 @@ using System.Collections;
 [RequireComponent(typeof(Vision))]
 [RequireComponent(typeof(Attack))]
 
-public class CreepController : ActorController, IVisionListener, ILegsListener, IAttackListener {
+public class CreepOrder : Order {
+
+	public enum CreepOrderType {
+
+		Stop,
+		Hold,
+		Move,
+		MoveAttack,
+		Attack,
+		Patrol,
+
+	}
+
+	public CreepOrderType creepOrder;
+	public DTRMVector2 position;
+	public Health target;
+
+	public CreepOrder(int destinationID, CreepOrderType orderType, DTRMVector2 position, Health target) : base (destinationID) {
+
+		creepOrder = orderType;
+
+		if (orderType == CreepOrderType.Move ||
+			orderType == CreepOrderType.MoveAttack ||
+			orderType == CreepOrderType.Patrol )
+			this.position = position;
+
+		if (orderType == CreepOrderType.Attack)
+			this.target = target;
+
+	}
+
+}
+
+public class CreepController : ActorController, IVisionListener, ILegsListener, IAttackListener, IOrderReceiver {
 
 	// ссылки на компоненты
 	private Legs legs;
@@ -20,7 +53,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 	// Цель. Всегда находится в пределах видимости.
 	private Health targetVictim;
 
-	private enum CreepOrder {
+	private enum CreepState {
 
 		Idle,
 		/*
@@ -69,9 +102,11 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 
 	};
 
-	private CreepOrder activeOrder = CreepOrder.Idle;
+	private CreepState activeOrder = CreepState.Idle;
 
 	public override void DTRMStart() {
+
+		base.DTRMStart();
 
 		legs = GetComponent<Legs>();
 		vision = GetComponent<Vision>();
@@ -82,6 +117,96 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 	public override void DTRMUpdate() {
 
 	}
+
+	// public override void GetOrder(params object[] orderDetails) {
+
+	// 	if (!(orderDetails[0] is CreepState)) {
+
+	// 		Debug.LogError("Incorrect order: no order type");
+	// 		return;
+
+	// 	}
+
+	// 	CreepState newOrder = (CreepState) orderDetails[0];
+	// 	DTRMVector2 destination;
+
+	// 	switch (newOrder) {
+
+	// 		case CreepState.Idle:
+
+	// 			Debug.LogError("Incorrect order: can't order creep to be idle");
+	// 			break;
+
+	// 		case CreepState.Hold:
+
+	// 			Hold();
+	// 			break;
+
+	// 		case CreepState.Move:
+
+	// 			if (!(orderDetails[1] is DTRMVector2)) {
+
+	// 				Debug.LogError("Incorrect order: no move destination");
+	// 				return;
+
+	// 			}
+
+	// 			destination = (DTRMVector2) orderDetails[1];
+	// 			Move(destination);
+
+	// 			break;
+
+	// 		case CreepState.MoveAttack:
+
+	// 			if (!(orderDetails[1] is DTRMVector2)) {
+
+	// 				Debug.LogError("Incorrect order: no move-attack destination");
+	// 				return;
+
+	// 			}
+
+	// 			destination = (DTRMVector2) orderDetails[1];
+	// 			MoveAttack(destination);
+
+	// 			break;
+
+	// 		case CreepState.Attack:
+
+	// 			if (!(orderDetails[1] is Health)) {
+
+	// 				Debug.LogError("Incorrect order: no target");
+	// 				return;
+
+	// 			}
+
+	// 			Health newTarget = (Health) orderDetails[1];
+	// 			Attack(newTarget);
+
+	// 			break;
+
+	// 		case CreepState.Patrol:
+
+	// 			if (!(orderDetails[1] is DTRMVector2)) {
+
+	// 				Debug.LogError("Incorrect order: no patrol destination");
+	// 				return;
+
+	// 			}
+
+	// 			destination = (DTRMVector2) orderDetails[1];
+	// 			Patrol(destination);
+
+	// 			break;
+
+	// 		default:
+
+	// 			Debug.LogError("Unknown order!");
+	// 			break;
+
+	// 	}
+
+
+	// }
 
 	//
 	// Внутренние функции
@@ -122,57 +247,58 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 	// Приказы
 	//
 
-	public void Move(DTRMVector2 position) {
+	private void Move(DTRMVector2 position) {
 
-		activeOrder = CreepOrder.Move;
+		activeOrder = CreepState.Move;
 		targetPosition = position;
 		legs.targetPosition = targetPosition;
 		targetVictim = null;
 
 	}
 
-	public void MoveAttack(DTRMVector2 position) {
+	private void MoveAttack(DTRMVector2 position) {
 
-		activeOrder = CreepOrder.MoveAttack;
+		activeOrder = CreepState.MoveAttack;
 		targetPosition = position;
 		targetVictim = null;
 		FindTargetOrCarryOn();
 
 	}
 
-	public void Attack(Health target) {
+	private void Attack(Health target) {
 
 		if (!attack.CheckTarget(target))
 			return;
 
-		activeOrder = CreepOrder.Attack;
+		activeOrder = CreepState.Attack;
 		targetVictim = target;
 		attack.AppointTarget(targetVictim);
 		legs.FollowTarget(target.myPosition);
 
 	}
 
-	public void Patrol(Vector2 position) {
+	private void Patrol(DTRMVector2 position) {
 
+		targetPosition = position;
 		patrolPosition = myPosition.position;
-		activeOrder = CreepOrder.Patrol;
+		activeOrder = CreepState.Patrol;
 		targetVictim = null;
 		FindTargetOrCarryOn();
 
 	}
 
-	public void Stop() {
+	private void Stop() {
 
-		activeOrder = CreepOrder.Idle;
+		activeOrder = CreepState.Idle;
 		legs.Stop();
 		targetVictim = null;
 		TryFindTarget();
 
 	}
 
-	public void Hold() {
+	private void Hold() {
 
-		activeOrder = CreepOrder.Hold;
+		activeOrder = CreepState.Hold;
 		targetPosition = myPosition.position;
 		targetVictim = null;
 		TryFindTarget();
@@ -190,7 +316,7 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 			return;
 
 		// если мы двигаемся не замечая никого, нам похуй
-		if (activeOrder == CreepOrder.Move)
+		if (activeOrder == CreepState.Move)
 			return;
 
 		Health target = observee.GetComponent<Health>();
@@ -222,32 +348,32 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 
 		switch(activeOrder) {
 
-			case CreepOrder.Idle:
+			case CreepState.Idle:
 
 				Debug.LogWarning("Unexpected target reach event for state Idle!");
 				break;
 
-			case CreepOrder.Hold:
+			case CreepState.Hold:
 				
 				// Вернулись на место, отдыхаем.
 				break;
 
-			case CreepOrder.Move:
+			case CreepState.Move:
 
-				activeOrder = CreepOrder.Idle;
+				activeOrder = CreepState.Idle;
 				break;
 
-			case CreepOrder.MoveAttack:
+			case CreepState.MoveAttack:
 
-				activeOrder = CreepOrder.Idle;
+				activeOrder = CreepState.Idle;
 				break;
 
-			case CreepOrder.Attack:
+			case CreepState.Attack:
 
 				Debug.LogWarning("Unexpected target reach event for state Attack!");
 				break;
 
-			case CreepOrder.Patrol:
+			case CreepState.Patrol:
 
 				DTRMVector2 exchangePosition = targetPosition;
 				targetPosition = patrolPosition;
@@ -279,36 +405,36 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 
 		switch(activeOrder) {
 
-			case CreepOrder.Idle:
+			case CreepState.Idle:
 
 				if (!TryFindTarget())
 					legs.Stop();
 
 				break;
 
-			case CreepOrder.Hold:
+			case CreepState.Hold:
 
 				FindTargetOrCarryOn();
 				break;
 
-			case CreepOrder.Move:
+			case CreepState.Move:
 
 				Debug.LogWarning("Unexpected lost appointed target event for move state!");
 				break;
 
-			case CreepOrder.MoveAttack:
+			case CreepState.MoveAttack:
 
 				FindTargetOrCarryOn();
 				break;
 
-			case CreepOrder.Attack:
+			case CreepState.Attack:
 
-				activeOrder = CreepOrder.Idle;
+				activeOrder = CreepState.Idle;
 				TryFindTarget();
 
 				break;
 
-			case CreepOrder.Patrol:
+			case CreepState.Patrol:
 				
 				FindTargetOrCarryOn();
 				break;
@@ -326,6 +452,52 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 	public void OnApplyDamage() {
 
 		// Нам похуй.
+
+	}
+
+	//
+	// IOrderReceiver
+	//
+
+	public void ReceiveOrder(Order order) {
+
+		Debug.LogError("Wrong order type!");
+
+	}
+
+	public void ReceiveOrder(CreepOrder order) {
+
+		switch (order.creepOrder) {
+
+			case CreepOrder.CreepOrderType.Stop:
+				Stop();
+				break;
+
+			case CreepOrder.CreepOrderType.Hold:
+				Hold();
+				break;
+
+			case CreepOrder.CreepOrderType.Move:
+				Move(order.position);
+				break;
+
+			case CreepOrder.CreepOrderType.MoveAttack:
+				MoveAttack(order.position);
+				break;
+
+			case CreepOrder.CreepOrderType.Attack:
+				Attack(order.target);
+				break;
+
+			case CreepOrder.CreepOrderType.Patrol:
+				Patrol(order.position);
+				break;
+
+			default:
+				Debug.LogError("Unknown order!");
+				break;
+
+		}
 
 	}
 

@@ -48,13 +48,13 @@ public class Vision : DTRMComponent {
 
 			invisiblesInSight.Remove(visible);
 			visiblesInSight.Add(visible);
-			// SendNoticedMessage(visible);
+			SendNoticedMessage(visible);
 
 		} else {
 
 			visiblesInSight.Remove(visible);
 			invisiblesInSight.Add(visible);
-			// SendLostMessage(visible);
+			SendLostMessage(visible);
 
 		}
 
@@ -90,6 +90,7 @@ public class Vision : DTRMComponent {
 				continue;
 
 			SendNoticedMessage(visible);
+			visible.inRangeOfVisions.Add(this);
 
 		}
 
@@ -102,6 +103,7 @@ public class Vision : DTRMComponent {
 				continue;
 
 			SendLostMessage(visible);
+			visible.inRangeOfVisions.Remove(this);
 
 		}
 
@@ -114,6 +116,7 @@ public class Vision : DTRMComponent {
 				continue;
 
 			SendLostMessage(visible);
+			visible.inRangeOfVisions.Remove(this);
 
 		}
 

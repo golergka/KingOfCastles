@@ -66,7 +66,8 @@ public abstract class Attack : DTRMComponent {
 
 			int hash = 17;
 			hash = hash * 23 + damage.GetHashCode();
-			hash = hash * 23 + currentTarget.GetHashCode();
+			if (currentTarget != null)
+				hash = hash * 23 + currentTarget.GetHashCode();
 			hash = hash * 23 + appointedTarget.GetHashCode();
 			return hash;
 

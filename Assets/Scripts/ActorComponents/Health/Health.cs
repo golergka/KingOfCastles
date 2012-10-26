@@ -65,7 +65,8 @@ public class Health : DTRMComponent {
 	public int initialHealthPoints = 100;
 	public int initialMaxHealthPoints = 100;
 
-	private Component[] healthChangeListeners;
+	// Temporary off
+	// private Component[] healthChangeListeners;
 	private Component[] healthStateListeners;
 
 	public override void DTRMStart() {
@@ -73,7 +74,8 @@ public class Health : DTRMComponent {
 		_healthPoints = initialHealthPoints;
 		_maxHealhPoints = initialMaxHealthPoints;
 
-		healthChangeListeners = GetComponents(typeof(IHealthChangeListener));
+		// Temporary off as no one uses that
+		// healthChangeListeners = GetComponents(typeof(IHealthChangeListener));
 		healthStateListeners = GetComponents(typeof(IHealthStateListener));
 
 	}
@@ -100,8 +102,9 @@ public class Health : DTRMComponent {
 
 		}
 
-		foreach(Component listener in healthChangeListeners)
-			((IHealthChangeListener)listener).OnTakeDamage(damageAmount);
+		// Temporary off as nobody uses that
+		// foreach(Component listener in healthChangeListeners)
+			// ((IHealthChangeListener)listener).OnTakeDamage(damageAmount);
 
 		if (zeroHealth)
 			foreach(Component listener in healthStateListeners)
@@ -126,8 +129,8 @@ public class Health : DTRMComponent {
 
 		}
 
-		foreach(Component listener in healthChangeListeners)
-			((IHealthChangeListener)listener).OnTakeHealing(healingAmount);
+		// foreach(Component listener in healthChangeListeners)
+			// ((IHealthChangeListener)listener).OnTakeHealing(healingAmount);
 
 	}
 

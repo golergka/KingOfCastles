@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PersistentAttack : Attack, IVisionListener {
 
-	public DTRMLong attackRange = new DTRMLong(3);
+	public DTRMLong attackRange = new DTRMLong(10);
 	public DTRMLong period = new DTRMLong(1);
 
 	private DTRMLong lastAttackTime = new DTRMLong();

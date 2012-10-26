@@ -8,6 +8,7 @@ public abstract class LocalPlayerController : PlayerController {
 
 	public override void DTRMStart() {
 
+		base.DTRMStart();
 		LocalPlayerController.localPlayer = this;
 
 	}

@@ -7,8 +7,12 @@ public class TargetableRigidbody : MonoBehaviour {
 
 		DTRMPosition position = GetComponent<DTRMPosition>();
 
-		if(position != null)
-			LocalPlayerController.localPlayer.GiveTarget(position);
+		if(position != null) {
+
+			PlayerOrder newOrder = new PlayerOrder(position);
+			DTRM.singleton.PutOrder(newOrder);
+
+		}
 
 	}
 

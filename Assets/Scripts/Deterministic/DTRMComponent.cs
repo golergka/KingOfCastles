@@ -27,7 +27,7 @@ public abstract class DTRMComponent : MonoBehaviour {
 		get {
 
 			if (!_dtrmIDset)
-				Debug.LogError("Accessing not determined id!");
+				Debug.LogError("Accessing not determined id: " + ToString());
 
 			return _dtrmID;
 
@@ -35,10 +35,16 @@ public abstract class DTRMComponent : MonoBehaviour {
 
 		set {
 
-			if (_dtrmIDset)
+			if (_dtrmIDset) {
+				
 				Debug.LogError("Setting id that is already set!");
-			else
+
+			} else {
+
+				_dtrmIDset = true;
 				_dtrmID = value;
+
+			}
 
 		}
 

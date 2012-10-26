@@ -24,6 +24,8 @@ public class ProjectileController : ActorController, ILegsListener {
 
 	public override void DTRMStart() {
 
+		base.DTRMStart();
+
 		attack = GetComponent<Attack>();
 		legs = GetComponent<Legs>();
 
