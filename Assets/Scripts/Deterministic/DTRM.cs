@@ -2,39 +2,23 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+[RequireComponent(typeof(DTRMObjectManager))]
+
 public class DTRM : MonoBehaviour {
 
 	public static DTRM singleton;
+	private DTRMObjectManager objectManager;
 
 	void Start() {
 
-		// get all the objects
+		//
+		// Getting components
+		//
 
-		dtrmComponents = new List<DTRMComponent>();
-		Object[] objects = FindObjectsOfType(typeof(DTRMComponent));
-
-		foreach( Object obj in objects ) {
-
-			dtrmComponents.Add( (DTRMComponent) obj );
-
-		}
+		objectManager = GetComponent<DTRMObjectManager>();
+		objectManager.Gather();
 
 		singleton = this;
-
-		// TODO: sort list by hash
-
-
-		// assign IDs to objects in order
-
-		// int idCounter = 1;
-		// foreach(DTRMComponent component in dtrmComponents)
-		// 	component.dtrmID = idCounter++;
-		for (int i = 0; i < dtrmComponents.Count; i++)
-			dtrmComponents[i].dtrmID = i;
-
-		// call DTRMStart on each of objects
-		foreach (DTRMComponent component in dtrmComponents)
-			component.DTRMStart();
 
 		//
 		// Orders
@@ -45,21 +29,28 @@ public class DTRM : MonoBehaviour {
 	}
 
 	//
-	// Object management
-	//
-
-	// !!!
-	// dtrmComponents[i].dtrmID == i
-	// !!!
-	List<DTRMComponent> dtrmComponents;
-
-	//
-	// Players
+	// Players & Network
 	//
 
 	private const int thisPlayerID = 1; // THIS IS PLACEHOLDER CODE!!! TODO : REMOVE НАХУЙ
 	private const int maxPlayers = 10;
 	public int activePlayers = 1; // TODO: IMPLEMENT
+	public bool singlePlayer {
+
+		get { return ( gameType == GameType.Single ); }
+
+	}
+
+	private enum GameType {
+
+		Menu, // the game hasn't started yet
+		Single, // it's a single player game
+		Server, // player's a server
+		Client, // player's a client
+
+	}
+
+	private GameType gameType = GameType.Single;
 
 	//
 	// Time
@@ -102,48 +93,43 @@ public class DTRM : MonoBehaviour {
 
 			}
 
+			// increase step number
+			dtrmPreviousStepTime = dtrmTime;
+			_dtrmTime += dtrmStep;
+			_currentStep++;
+
 			waitingForOrders = false;
+			ExecuteOrders(orderGroupsToExecute);
 
-			foreach(OrderGroup ordersToExecute in orderGroupsToExecute) {
+		} else {
 
-				foreach(Order orderToExecute in ordersToExecute.orders ) {
-					
-					DTRMComponent receiver = dtrmComponents[orderToExecute.destinationID];
-					
-					if (receiver is IOrderReceiver) {
-
-						IOrderReceiver orderReceiver = (IOrderReceiver) receiver;
-						orderReceiver.ReceiveOrder(orderToExecute);
-
-					} else {
-
-						Debug.LogError("Receiver " + receiver.ToString() + "doesn't have IOrderReceiver interface!");
-
-					}
-
-				}
-
-			}
+			// increase step number
+			dtrmPreviousStepTime = dtrmTime;
+			_dtrmTime += dtrmStep;
+			_currentStep++;
 
 		}
 
-		// TODO: Send orders to other players!
+		// putting orders that were collected
+		if (singlePlayer) {
 
-		// include my orders
-		orderQueue.PutOrders(ordersToSend);
+			orderQueue.PutOrders(ordersToSend);
 
-		// increase step
-		dtrmPreviousStepTime = dtrmTime;
-		_dtrmTime += dtrmStep;
-		_currentStep++;
+		} else {
+		
+			networkView.RPC("PutOrders", RPCMode.All, ordersToSend);
+
+		}
 
 		// execute update
-		foreach( DTRMComponent component in dtrmComponents )
-			if (component.gameObject.active)
-				component.DTRMUpdate();
+		objectManager.SendUpdate();
 
 		// create new ordersToSend
 		ordersToSend = new OrderGroup( currentStep + orderStepShift, thisPlayerID );
+
+		// put hash code
+		if (!singlePlayer)
+			networkView.RPC( "PutHashCode", RPCMode.All, currentStep, thisPlayerID, GetHashCode() );
 
 	}
 
@@ -179,11 +165,69 @@ public class DTRM : MonoBehaviour {
 
 	}
 
+	[RPC]
+	private void PutOrders(OrderGroup orderGroup) {
+
+		orderQueue.PutOrders(orderGroup);
+
+	}
+
+	private void ExecuteOrders(List<OrderGroup> orderGroupsToExecute) {
+
+		foreach(OrderGroup ordersToExecute in orderGroupsToExecute) {
+
+			foreach(Order orderToExecute in ordersToExecute.orders ) {
+				
+				DTRMComponent receiver = objectManager.GetObject(orderToExecute.destinationID);
+				
+				if (receiver is IOrderReceiver) {
+
+					IOrderReceiver orderReceiver = (IOrderReceiver) receiver;
+					orderReceiver.ReceiveOrder(orderToExecute);
+
+				} else {
+
+					Debug.LogError("Receiver " + receiver.ToString() + "doesn't have IOrderReceiver interface!");
+
+				}
+
+			}
+
+		}
+
+	}
+
 	//
 	// Debug GUI
 	//	
 
 	public void OnGUI() {
+
+		if (gameType == GameType.Menu)
+			MenuGUI();
+		else
+			GameGUI();
+
+	}
+
+	private void MenuGUI() { }
+
+	private void GameGUI() {
+
+		// alarm messages
+		Rect alarmRect = new Rect(Screen.width - 75, Screen.height - 10, 150, 20);
+
+		if (desync) {
+			GUI.Label( alarmRect, "Desync!");
+			return;
+		}
+
+		if ( waitingForOrders ) {
+			GUI.Label( alarmRect, "Waiting..." );
+			return;
+		}
+
+		// standard display
 
 		if ( GUI.Button( new Rect(10, 10, 150, 20), "Step" ) )
 			Step();
@@ -195,23 +239,47 @@ public class DTRM : MonoBehaviour {
 
 		GUI.Label( new Rect(330, 10, 150, 20), GetHashCode().ToString() );
 
-		if ( waitingForOrders )
-			GUI.Label( new Rect(490, 10, 150, 20), "Waiting..." );
-
 	}
 
 	//
+	// Hash control
 	//
-	//
+
+	private Dictionary<int, Dictionary<int, int>> hashHistory = new Dictionary<int, Dictionary<int, int>>();
+	private bool desync = false;
 
 	public override int GetHashCode() {
 
-		unchecked {
+		return objectManager.GetHashCode();
 
-			int hash = 17;
-			foreach (DTRMComponent component in dtrmComponents)
-				hash = hash * 23 + component.GetHashCode();
-			return hash;
+	}
+
+	[RPC]
+	private void PutHashCode(int step, int playerID, int hash) {
+
+		if(!hashHistory.ContainsKey(step))
+			hashHistory.Add( step, new Dictionary<int, int>() );
+
+		hashHistory[step].Add(playerID, hash);
+
+		if (hashHistory[step].Count == activePlayers)
+			CheckHashCode(step);
+
+	}
+
+	private void CheckHashCode(int step) {
+
+		int myHash = hashHistory[step][thisPlayerID];
+
+		foreach(int playerID in hashHistory[step].Keys) {
+
+			if (hashHistory[step][playerID] != myHash) {
+
+				Debug.LogError("Desync! Player: " + playerID + " step: " + step);
+				desync = true;
+				return;
+
+			}
 
 		}
 
