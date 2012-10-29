@@ -12,58 +12,60 @@ interface IAoEAttackListener {
 
 public class AoEAttack : MonoBehaviour {
 
-	public int damage;
-	public float attackRange;
+	// public int damage;
+	// public float attackRange;
 
-	private Component[] listeners;
-	private Vision vision;
+	// private Component[] listeners;
+	// private Vision vision;
 
-	void Start() {
+	// void Start() {
 
-		listeners = GetComponents(typeof(IAoEAttackListener));
-		vision = GetComponent<Vision>();
+	// 	listeners = GetComponents(typeof(IAoEAttackListener));
+	// 	vision = GetComponent<Vision>();
 
-	}
+	// }
 
 	// Boom! Bada-boom!!
 	public void Attack() {
 
-		List<Health> victims = new List<Health>();
+		// Turned off due to Vision refactor. Need to rewrite later.
 
-		foreach(Visible target in vision.visiblesInSight) {
+		// List<Health> victims = new List<Health>();
 
-			if (!FoFSystem.AreEnemies(this, target))
-				continue;
+		// foreach(Visible target in vision.visiblesInSight) {
 
-			Health targetHealth = target.GetComponent<Health>();
+		// 	if (!FoFSystem.AreEnemies(this, target))
+		// 		continue;
 
-			if (targetHealth == null)
-				continue;
+		// 	Health targetHealth = target.GetComponent<Health>();
 
-			if ( (target.rigidbody.position - rigidbody.position).magnitude > attackRange )
-				continue;
+		// 	if (targetHealth == null)
+		// 		continue;
 
-			targetHealth.InflictDamage( damage );
+		// 	if ( (target.rigidbody.position - rigidbody.position).magnitude > attackRange )
+		// 		continue;
 
-		}
+		// 	targetHealth.InflictDamage( damage );
 
-		foreach(IAoEAttackListener listener in listeners)
-			listener.OnAoEAttack(victims);
+		// }
 
-	}
-
-	public override int GetHashCode() {
-
-		unchecked { // thank you Jon Skeet!
-
-			int hash = 17;
-			hash = hash * 23 + base.GetHashCode();
-			hash = hash * 23 + damage.GetHashCode();
-			hash = hash * 23 + attackRange.GetHashCode();
-			return hash;
-
-		}
+		// foreach(IAoEAttackListener listener in listeners)
+		// 	listener.OnAoEAttack(victims);
 
 	}
+
+	// public override int GetHashCode() {
+
+	// 	unchecked { // thank you Jon Skeet!
+
+	// 		int hash = 17;
+	// 		hash = hash * 23 + base.GetHashCode();
+	// 		hash = hash * 23 + damage.GetHashCode();
+	// 		hash = hash * 23 + attackRange.GetHashCode();
+	// 		return hash;
+
+	// 	}
+
+	// }
 
 }

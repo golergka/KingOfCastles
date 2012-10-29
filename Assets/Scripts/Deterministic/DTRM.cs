@@ -71,7 +71,7 @@ public class DTRM : MonoBehaviour {
 
 	}
 
-	private DTRMLong dtrmStep = new DTRMLong(0.01f);
+	private DTRMLong dtrmStep = new DTRMLong(0.05f);
 
 	private int _currentStep = 0;
 	public int currentStep {
@@ -143,8 +143,8 @@ public class DTRM : MonoBehaviour {
 
 		if ( Time.time - lastStepTime > dtrmStep.ToFloat() ) {
 
-			Step();
 			lastStepTime = Time.time;
+			Step();
 
 		}
 
