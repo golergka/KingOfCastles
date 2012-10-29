@@ -67,7 +67,7 @@ public class Vision : DTRMComponent {
 		List<Visible> newVisiblesInSight = new List<Visible>();
 		List<Visible> newInvisiblesInSight = new List<Visible>();
 
-		foreach(Visible visible in Visible.allVisibles ) {
+		foreach(Visible visible in VisibleGrid.GetNeighbors(myPosition.position) ) {
 
 			if ( myPosition.Distance(visible.myPosition) < visionDistance ) {
 
