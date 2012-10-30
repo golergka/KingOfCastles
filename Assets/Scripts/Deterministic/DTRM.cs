@@ -20,12 +20,6 @@ public class DTRM : MonoBehaviour {
 
 		singleton = this;
 
-		//
-		// Orders
-		//
-
-		ordersToSend = new OrderGroup( orderStepShift, thisPlayerID );
-
 	}
 
 	//
@@ -34,7 +28,7 @@ public class DTRM : MonoBehaviour {
 
 	private const int thisPlayerID = 1; // THIS IS PLACEHOLDER CODE!!! TODO : REMOVE НАХУЙ
 	private const int maxPlayers = 10;
-	public int activePlayers = 1; // TODO: IMPLEMENT
+	public int activePlayers = 2; // TODO: IMPLEMENT
 	public bool singlePlayer {
 
 		get { return ( gameType == GameType.Single ); }
@@ -50,7 +44,26 @@ public class DTRM : MonoBehaviour {
 
 	}
 
-	private GameType gameType = GameType.Single;
+	private GameType gameType = GameType.Menu;
+	private string connectionError = "";
+
+	private void OnServerInitialized() {
+
+		gameType = GameType.Server;
+
+	}
+
+	private void OnConnectedToServer() {
+
+		gameType = GameType.Client;
+
+	}
+
+	private void OnFailedToConnect(NetworkConnectionError connectionError) {
+
+		this.connectionError = connectionError.ToString();
+
+	}
 
 	//
 	// Time
@@ -64,14 +77,14 @@ public class DTRM : MonoBehaviour {
 	}
 
 	private DTRMLong dtrmPreviousStepTime = new DTRMLong(0);
-
 	public DTRMLong dtrmDeltaTime {
 
 		get { return dtrmTime - dtrmPreviousStepTime; }
 
 	}
 
-	private DTRMLong dtrmStep = new DTRMLong(0.05f);
+	private const float TIME_STEP = 0.05f; // how much does it take to complete one step in real time
+	private DTRMLong DTRM_STEP = new DTRMLong(TIME_STEP); // how much does it take to complete one step in dtrm time
 
 	private int _currentStep = 0;
 	public int currentStep {
@@ -80,56 +93,39 @@ public class DTRM : MonoBehaviour {
 
 	}
 
+	// amount of steps the other players are allowed to lag behind
+	public const int LAG_STEP = 5;
+	private bool _waiting = false;
+	public bool waiting { get { return _waiting; } }
+
+	private void IncreaseTime(DTRMLong deltaTime) {
+
+		dtrmPreviousStepTime = dtrmTime;
+		_dtrmTime += deltaTime;
+		_currentStep++;
+
+	}
+
 	private void Step() {
 
-		// execute orders or wait for them
-		if (currentStep > orderStepShift) {
+		if ( !ReadyForStep(currentStep + 1) ) {
 
-			List<OrderGroup> orderGroupsToExecute = orderQueue.GetOrders(currentStep + 1);
-			if ( orderGroupsToExecute == null ) {
-
-				waitingForOrders = true;
-				return;
-
-			}
-
-			// increase step number
-			dtrmPreviousStepTime = dtrmTime;
-			_dtrmTime += dtrmStep;
-			_currentStep++;
-
-			waitingForOrders = false;
-			ExecuteOrders(orderGroupsToExecute);
-
-		} else {
-
-			// increase step number
-			dtrmPreviousStepTime = dtrmTime;
-			_dtrmTime += dtrmStep;
-			_currentStep++;
+			_waiting = true;
+			return;
 
 		}
+
+		_waiting = false;
+		IncreaseTime(DTRM_STEP);
 
 		// putting orders that were collected
-		if (singlePlayer) {
-
-			orderQueue.PutOrders(ordersToSend);
-
-		} else {
-		
-			networkView.RPC("PutOrders", RPCMode.All, ordersToSend);
-
-		}
 
 		// execute update
 		objectManager.SendUpdate();
 
-		// create new ordersToSend
-		ordersToSend = new OrderGroup( currentStep + orderStepShift, thisPlayerID );
-
 		// put hash code
 		if (!singlePlayer)
-			networkView.RPC( "PutHashCode", RPCMode.All, currentStep, thisPlayerID, GetHashCode() );
+			networkView.RPC( "PutHashCode", RPCMode.All, currentStep, Network.player, GetHashCode() );
 
 	}
 
@@ -141,57 +137,13 @@ public class DTRM : MonoBehaviour {
 		if (!playing)
 			return;
 
-		if ( Time.time - lastStepTime > dtrmStep.ToFloat() ) {
+		if (desync)
+			return;
+
+		if ( Time.time - lastStepTime > TIME_STEP ) {
 
 			lastStepTime = Time.time;
 			Step();
-
-		}
-
-	}
-
-	//
-	// Orders
-	//
-
-	private const int orderStepShift = 5;
-	private OrderGroup ordersToSend; // orders to collect and send during this frame
-	private OrderQueue orderQueue = new OrderQueue();
-	private bool waitingForOrders = false;
-
-	public void PutOrder(Order order) {
-
-		ordersToSend.orders.Add(order);
-
-	}
-
-	[RPC]
-	private void PutOrders(OrderGroup orderGroup) {
-
-		orderQueue.PutOrders(orderGroup);
-
-	}
-
-	private void ExecuteOrders(List<OrderGroup> orderGroupsToExecute) {
-
-		foreach(OrderGroup ordersToExecute in orderGroupsToExecute) {
-
-			foreach(Order orderToExecute in ordersToExecute.orders ) {
-				
-				DTRMComponent receiver = objectManager.GetObject(orderToExecute.destinationID);
-				
-				if (receiver is IOrderReceiver) {
-
-					IOrderReceiver orderReceiver = (IOrderReceiver) receiver;
-					orderReceiver.ReceiveOrder(orderToExecute);
-
-				} else {
-
-					Debug.LogError("Receiver " + receiver.ToString() + "doesn't have IOrderReceiver interface!");
-
-				}
-
-			}
 
 		}
 
@@ -210,19 +162,37 @@ public class DTRM : MonoBehaviour {
 
 	}
 
-	private void MenuGUI() { }
+	private void MenuGUI() {
+
+		if (GUI.Button (new Rect(10, 10, 150, 20), "Start Server") )
+			Network.InitializeServer(32, 12345, false);
+
+		if (GUI.Button (new Rect(10, 40, 150, 20), "Connect") ) {
+		
+			Network.Connect("127.0.0.1", 12345);
+			connectionError = "Connecting...";
+
+		}
+
+		GUI.Label(new Rect(170, 40, 150, 20), connectionError);
+
+	}
 
 	private void GameGUI() {
 
+		GUI.Label( new Rect(330, 10, 150, 20), GetHashCode().ToString() );
+
+		GUI.Label( new Rect(500, 10, 150, 20), currentStep.ToString() );
+
 		// alarm messages
-		Rect alarmRect = new Rect(Screen.width - 75, Screen.height - 10, 150, 20);
+		Rect alarmRect = new Rect(Screen.width/2 - 75, Screen.height/2 - 10, 150, 20);
 
 		if (desync) {
 			GUI.Label( alarmRect, "Desync!");
 			return;
 		}
 
-		if ( waitingForOrders ) {
+		if ( waiting ) {
 			GUI.Label( alarmRect, "Waiting..." );
 			return;
 		}
@@ -237,15 +207,13 @@ public class DTRM : MonoBehaviour {
 		if ( GUI.Button( new Rect(170, 10, 150, 20), playPauseLabel ) )
 			playing = !playing;
 
-		GUI.Label( new Rect(330, 10, 150, 20), GetHashCode().ToString() );
-
 	}
 
 	//
 	// Hash control
 	//
 
-	private Dictionary<int, Dictionary<int, int>> hashHistory = new Dictionary<int, Dictionary<int, int>>();
+	private Dictionary<int, Dictionary<NetworkPlayer, int>> hashHistory = new Dictionary<int, Dictionary<NetworkPlayer, int>>();
 	private bool desync = false;
 
 	public override int GetHashCode() {
@@ -255,12 +223,12 @@ public class DTRM : MonoBehaviour {
 	}
 
 	[RPC]
-	private void PutHashCode(int step, int playerID, int hash) {
+	private void PutHashCode(int step, NetworkPlayer player, int hash) {
 
 		if(!hashHistory.ContainsKey(step))
-			hashHistory.Add( step, new Dictionary<int, int>() );
+			hashHistory.Add( step, new Dictionary<NetworkPlayer, int>() );
 
-		hashHistory[step].Add(playerID, hash);
+		hashHistory[step].Add(player, hash);
 
 		if (hashHistory[step].Count == activePlayers)
 			CheckHashCode(step);
@@ -269,19 +237,38 @@ public class DTRM : MonoBehaviour {
 
 	private void CheckHashCode(int step) {
 
-		int myHash = hashHistory[step][thisPlayerID];
+		int myHash = hashHistory[step][Network.player];
 
-		foreach(int playerID in hashHistory[step].Keys) {
+		foreach(NetworkPlayer player in hashHistory[step].Keys) {
 
-			if (hashHistory[step][playerID] != myHash) {
+			int hisCash = hashHistory[step][player];
 
-				Debug.LogError("Desync! Player: " + playerID + " step: " + step);
+			if (hisCash != myHash) {
+
+				Debug.LogError("Desync! Player: " + player.ToString() + " step: " + step + " my hash: " + myHash + " his hash: " + hisCash);
 				desync = true;
 				return;
 
 			}
 
 		}
+
+	}
+
+	private bool ReadyForStep(int step) {
+
+		// if it's one of the first steps, we are certainly ready
+		if (step < LAG_STEP)
+			return true;
+
+		if ( !hashHistory.ContainsKey(step - LAG_STEP + 1) )
+			return false;
+
+		Debug.Log("Step: " + currentStep + " players: " + activePlayers +
+			" hashHistory[step - LAG_STEP + 1].Count: " + hashHistory[step - LAG_STEP + 1].Count.ToString() );
+
+		// otherwise, we need to make sure that other players already sent us info about their previous step
+		return ( hashHistory[step - LAG_STEP + 1].Count == activePlayers );
 
 	}
 
