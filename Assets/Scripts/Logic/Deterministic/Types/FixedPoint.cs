@@ -5,6 +5,8 @@ public class FixedPoint {
 
 	private long value = 0;
 	private const long fixedPoint = 10000;
+	
+	#region constructors
 
 	public FixedPoint(int value = 0) {
 
@@ -17,7 +19,35 @@ public class FixedPoint {
 		this.value = (long) (value * fixedPoint);
 
 	}
+	
+	#endregion
+	
+	#region math
 
+	public FixedPoint sqrt {
+
+		get {
+
+			if (this <= 0)
+				return new FixedPoint(0);
+
+			FixedPoint n = ( this / 2) + 1;
+			FixedPoint n1 = ( n + (this / n) ) / 2;
+			while (n1 < n) {
+				n = n1;
+				n1 = (n + (this / n)) /2;
+
+			}
+			return n;
+
+		}
+
+	}
+	
+	#endregion
+	
+	#region method conversions
+	
 	public float ToFloat() {
 
 		return ( (float) value ) / fixedPoint;
@@ -30,11 +60,23 @@ public class FixedPoint {
 
 	}
 	
+	#endregion
+	
+	#region implicit conversions
+	
 	public static implicit operator FixedPoint(float value) {
 		
 		return new FixedPoint(value);
 		
 	}
+	
+	public static implicit operator float(FixedPoint value) {
+		
+		return value.ToFloat();
+		
+	}
+	
+	#endregion
 
 	//
 	// operator (DTRMLong, DTRMLong)
@@ -281,26 +323,6 @@ public class FixedPoint {
 	public override int GetHashCode() {
 
 		return value.GetHashCode();
-
-	}
-
-	public FixedPoint sqrt {
-
-		get {
-
-			if (this <= 0)
-				return new FixedPoint(0);
-
-			FixedPoint n = ( this / 2) + 1;
-			FixedPoint n1 = ( n + (this / n) ) / 2;
-			while (n1 < n) {
-				n = n1;
-				n1 = (n + (this / n)) /2;
-
-			}
-			return n;
-
-		}
 
 	}
 
