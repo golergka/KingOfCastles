@@ -34,6 +34,7 @@ public class DTRM : MonoBehaviour {
 		get { return ( gameType == GameType.Single ); }
 
 	}
+	private string serverIP = "127.0.0.1";
 
 	private enum GameType {
 
@@ -167,12 +168,14 @@ public class DTRM : MonoBehaviour {
 		if (GUI.Button (new Rect(10, 10, 150, 20), "Start Server") )
 			Network.InitializeServer(32, 12345, false);
 
-		if (GUI.Button (new Rect(10, 40, 150, 20), "Connect") ) {
+		if (GUI.Button (new Rect(10, 70, 150, 20), "Connect") ) {
 		
 			Network.Connect("127.0.0.1", 12345);
 			connectionError = "Connecting...";
 
 		}
+
+		serverIP = GUI.TextField(new Rect(10, 40, 150, 20), serverIP);
 
 		GUI.Label(new Rect(170, 40, 150, 20), connectionError);
 
@@ -206,6 +209,8 @@ public class DTRM : MonoBehaviour {
 
 		if ( GUI.Button( new Rect(170, 10, 150, 20), playPauseLabel ) )
 			playing = !playing;
+
+		GUI.Label( new Rect( 10, 40, 150, 20), "IP: " + Network.player.ipAddress + ":" + Network.player.port.ToString() );
 
 	}
 
@@ -263,9 +268,6 @@ public class DTRM : MonoBehaviour {
 
 		if ( !hashHistory.ContainsKey(step - LAG_STEP + 1) )
 			return false;
-
-		Debug.Log("Step: " + currentStep + " players: " + activePlayers +
-			" hashHistory[step - LAG_STEP + 1].Count: " + hashHistory[step - LAG_STEP + 1].Count.ToString() );
 
 		// otherwise, we need to make sure that other players already sent us info about their previous step
 		return ( hashHistory[step - LAG_STEP + 1].Count == activePlayers );

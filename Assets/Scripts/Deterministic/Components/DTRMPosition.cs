@@ -14,13 +14,13 @@ public class DTRMPosition : DTRMComponent {
 
 	}
 
-	public DTRMLong Distance(DTRMPosition other) {
+	public FixedPoint Distance(DTRMPosition other) {
 
 		return (position - other.position).magnitude;
 
 	}
 
-	public DTRMLong SqrDistance(DTRMPosition other) {
+	public FixedPoint SqrDistance(DTRMPosition other) {
 
 		return (position - other.position).sqrMagnitude;
 

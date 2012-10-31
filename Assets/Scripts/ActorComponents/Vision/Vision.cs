@@ -32,8 +32,8 @@ public class Vision : DTRMComponent {
 	// [HideInInspector] private List<Visible> invisiblesInSight = new List<Visible>();
 
 	// vision settings
-	private DTRMLong sqrVisionDistance = new DTRMLong(100);
-	public DTRMLong visionDistance {
+	private FixedPoint sqrVisionDistance = new FixedPoint(100);
+	public FixedPoint visionDistance {
 
 		get { return sqrVisionDistance.sqrt; }
 		set { sqrVisionDistance = value*value; }
