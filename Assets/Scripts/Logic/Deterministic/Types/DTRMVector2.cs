@@ -47,7 +47,9 @@ public class DTRMVector2 {
 		}
 
 	}
-
+	
+	#region Constructors
+	
 	public DTRMVector2(FixedPoint x, FixedPoint y) {
 
 		this.x = x;
@@ -75,6 +77,15 @@ public class DTRMVector2 {
 		this.y = new FixedPoint(vector.y);
 
 	}
+	
+	public DTRMVector2(Vector3 vector3) {
+		
+		this.x = new FixedPoint(vector3.x);
+		this.y = new FixedPoint(vector3.y);
+		
+	}
+	
+	#endregion
 
 	public Vector2 ToVector2 () {
 
@@ -83,6 +94,15 @@ public class DTRMVector2 {
 		result.y = y.ToFloat();
 		return result;
 
+	}
+	
+	public Vector3 ToVector3() {
+		
+		Vector3 result = Vector3.zero;
+		result.x = x.ToFloat();
+		result.y = y.ToFloat();
+		return result;
+		
 	}
 
 	//
