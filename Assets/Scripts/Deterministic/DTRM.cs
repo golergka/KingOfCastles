@@ -70,22 +70,22 @@ public class DTRM : MonoBehaviour {
 	// Time
 	//
 
-	private DTRMLong _dtrmTime = new DTRMLong(0);
-	public DTRMLong dtrmTime {
+	private FixedPoint _dtrmTime = new FixedPoint(0);
+	public FixedPoint dtrmTime {
 
 		get { return _dtrmTime; }
 
 	}
 
-	private DTRMLong dtrmPreviousStepTime = new DTRMLong(0);
-	public DTRMLong dtrmDeltaTime {
+	private FixedPoint dtrmPreviousStepTime = new FixedPoint(0);
+	public FixedPoint dtrmDeltaTime {
 
 		get { return dtrmTime - dtrmPreviousStepTime; }
 
 	}
 
 	private const float TIME_STEP = 0.05f; // how much does it take to complete one step in real time
-	private DTRMLong DTRM_STEP = new DTRMLong(TIME_STEP); // how much does it take to complete one step in dtrm time
+	private FixedPoint DTRM_STEP = new FixedPoint(TIME_STEP); // how much does it take to complete one step in dtrm time
 
 	private int _currentStep = 0;
 	public int currentStep {
@@ -99,7 +99,7 @@ public class DTRM : MonoBehaviour {
 	private bool _waiting = false;
 	public bool waiting { get { return _waiting; } }
 
-	private void IncreaseTime(DTRMLong deltaTime) {
+	private void IncreaseTime(FixedPoint deltaTime) {
 
 		dtrmPreviousStepTime = dtrmTime;
 		_dtrmTime += deltaTime;
@@ -170,7 +170,7 @@ public class DTRM : MonoBehaviour {
 
 		if (GUI.Button (new Rect(10, 70, 150, 20), "Connect") ) {
 		
-			Network.Connect("127.0.0.1", 12345);
+			Network.Connect(serverIP, 12345);
 			connectionError = "Connecting...";
 
 		}
