@@ -8,7 +8,8 @@ Temp
 *.sln
 *.sublime-project
 *.sublime-workspace
-*sublime*
+*.sublime-project.meta
+*.sublime-workspace.meta
 *.csproj
 *.pidb
 *.app*
