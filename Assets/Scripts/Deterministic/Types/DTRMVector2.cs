@@ -3,10 +3,10 @@ using System.Collections;
 
 public class DTRMVector2 {
 
-	public DTRMLong x;
-	public DTRMLong y;
+	public FixedPoint x;
+	public FixedPoint y;
 
-	public DTRMLong sqrMagnitude {
+	public FixedPoint sqrMagnitude {
 
 		get {
 
@@ -16,7 +16,7 @@ public class DTRMVector2 {
 
 	}
 
-	public DTRMLong magnitude {
+	public FixedPoint magnitude {
 
 		get {
 
@@ -48,7 +48,7 @@ public class DTRMVector2 {
 
 	}
 
-	public DTRMVector2(DTRMLong x, DTRMLong y) {
+	public DTRMVector2(FixedPoint x, FixedPoint y) {
 
 		this.x = x;
 		this.y = y;
@@ -57,22 +57,22 @@ public class DTRMVector2 {
 
 	public DTRMVector2(int x = 0, int y = 0) {
 
-		this.x = new DTRMLong(x);
-		this.y = new DTRMLong(y);
+		this.x = new FixedPoint(x);
+		this.y = new FixedPoint(y);
 
 	}
 
 	public DTRMVector2(float x, float y) {
 
-		this.x = new DTRMLong(x);
-		this.y = new DTRMLong(y);
+		this.x = new FixedPoint(x);
+		this.y = new FixedPoint(y);
 
 	}
 
 	public DTRMVector2(Vector2 vector) {
 
-		this.x = new DTRMLong(vector.x);
-		this.y = new DTRMLong(vector.y);
+		this.x = new FixedPoint(vector.x);
+		this.y = new FixedPoint(vector.y);
 
 	}
 
@@ -144,13 +144,13 @@ public class DTRMVector2 {
 
 	}
 
-	public static DTRMVector2 operator *(DTRMVector2 a, DTRMLong b) {
+	public static DTRMVector2 operator *(DTRMVector2 a, FixedPoint b) {
 
 		return new DTRMVector2(a.x * b, a.y * b);
 
 	}
 
-	public static DTRMVector2 operator /(DTRMVector2 a, DTRMLong b) {
+	public static DTRMVector2 operator /(DTRMVector2 a, FixedPoint b) {
 
 		return new DTRMVector2(a.x / b, a.y / b);
 

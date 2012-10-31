@@ -3,10 +3,10 @@ using System.Collections;
 
 public class PersistentAttack : Attack, IVisionListener {
 
-	public DTRMLong attackRange = new DTRMLong(10);
-	public DTRMLong period = new DTRMLong(1);
+	public FixedPoint attackRange = new FixedPoint(10);
+	public FixedPoint period = new FixedPoint(1);
 
-	private DTRMLong lastAttackTime = new DTRMLong();
+	private FixedPoint lastAttackTime = new FixedPoint();
 
 	public void OnNoticed(Visible observee) {
 
@@ -44,12 +44,12 @@ public class PersistentAttack : Attack, IVisionListener {
 		if ( currentTarget == null )
 			return;
 
-		DTRMLong timePassed = DTRM.singleton.dtrmTime - lastAttackTime;
+		FixedPoint timePassed = DTRM.singleton.dtrmTime - lastAttackTime;
 
 		if ( timePassed < period )
 			return;
 
-		DTRMLong targetDistance = ( myPosition.position - currentTarget.myPosition.position ).magnitude;
+		FixedPoint targetDistance = ( myPosition.position - currentTarget.myPosition.position ).magnitude;
 
 		if ( targetDistance > attackRange )
 			return;

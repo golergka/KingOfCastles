@@ -5,7 +5,7 @@ public class WalkingLegs : Legs {
 
 	public int defaultSpeed = 1;
 
-	public DTRMLong speed;
+	public FixedPoint speed;
 
 	private DTRMVector2 velocity = DTRMVector2.zero;
 
@@ -25,7 +25,7 @@ public class WalkingLegs : Legs {
 
 	}
 
-	private void MoveTowards(DTRMVector2 targetMovePosition, DTRMLong speedPercentage) {
+	private void MoveTowards(DTRMVector2 targetMovePosition, FixedPoint speedPercentage) {
 
 		DTRMVector2 desiredVelocity = (targetMovePosition - myPosition.position).normalized;
 		desiredVelocity *= speed;
@@ -43,7 +43,7 @@ public class WalkingLegs : Legs {
 	public override void DTRMStart() {
 
 		base.DTRMStart();
-		speed = new DTRMLong(defaultSpeed);
+		speed = new FixedPoint(defaultSpeed);
 
 	}
 
@@ -64,7 +64,7 @@ public class WalkingLegs : Legs {
 
 			case LegsState.MovingToPosition:
 
-				DTRMLong sqDistance = (targetPosition - myPosition.position).sqrMagnitude;
+				FixedPoint sqDistance = (targetPosition - myPosition.position).sqrMagnitude;
 
 				if ( sqDistance > dtrmSqTargetPositionClose ) {
 
@@ -72,7 +72,7 @@ public class WalkingLegs : Legs {
 
 				} else if ( sqDistance > dtrmSqTargetPositionReach ) {
 
-					DTRMLong speedMultipler = (sqDistance - dtrmSqTargetPositionReach) /
+					FixedPoint speedMultipler = (sqDistance - dtrmSqTargetPositionReach) /
 						(dtrmSqTargetPositionClose - dtrmSqTargetPositionReach);
 
 					MoveTowards(targetPosition, speedMultipler);
@@ -96,7 +96,7 @@ public class WalkingLegs : Legs {
 
 				} else if ( sqDistance > dtrmSqTargetActorBump) {
 					
-					DTRMLong speedMultipler = (sqDistance - dtrmSqTargetActorBump) /
+					FixedPoint speedMultipler = (sqDistance - dtrmSqTargetActorBump) /
 						(dtrmSqTargetActorFollow - dtrmSqTargetActorBump);
 
 					MoveTowards(targetActor.position, speedMultipler );
