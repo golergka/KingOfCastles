@@ -5,14 +5,13 @@ public class TargetableRigidbody : MonoBehaviour {
 
 	void OnMouseUpAsButton() {
 
-		// DTRMPosition position = GetComponent<DTRMPosition>();
+		Health health = GetComponent<Health>();
 
-		// if(position != null) {
+		if(health != null) {
 
-		// 	PlayerOrder newOrder = new PlayerOrder(position);
-		// 	DTRM.singleton.PutOrder(newOrder);
+			HeroOrderManager.singleton.AttackOrder(health);
 
-		// }
+		}
 
 	}
 

@@ -50,7 +50,7 @@ public abstract class DTRMComponent : MonoBehaviour {
 
 	}
 
-	public abstract void DTRMStart();
+	public virtual void DTRMStart() { }
 
 	public virtual void DTRMUpdate() { }
 

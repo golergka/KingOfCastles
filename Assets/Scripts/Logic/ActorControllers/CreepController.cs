@@ -6,38 +6,38 @@ using System.Collections.Generic;
 [RequireComponent(typeof(Vision))]
 [RequireComponent(typeof(Attack))]
 
-public class CreepOrder : Order {
-
-	public enum CreepOrderType {
-
-		Stop,
-		Hold,
-		Move,
-		MoveAttack,
-		Attack,
-		Patrol,
-
-	}
-
-	public CreepOrderType creepOrder;
-	public DTRMVector2 position;
-	public Health target;
-
-	public CreepOrder(int destinationID, CreepOrderType orderType, DTRMVector2 position, Health target) : base (destinationID) {
-
-		creepOrder = orderType;
-
-		if (orderType == CreepOrderType.Move ||
-			orderType == CreepOrderType.MoveAttack ||
-			orderType == CreepOrderType.Patrol )
-			this.position = position;
-
-		if (orderType == CreepOrderType.Attack)
-			this.target = target;
-
-	}
-
-}
+//public class CreepOrder : Order {
+//
+//	public enum CreepOrderType {
+//
+//		Stop,
+//		Hold,
+//		Move,
+//		MoveAttack,
+//		Attack,
+//		Patrol,
+//
+//	}
+//
+//	public CreepOrderType creepOrder;
+//	public DTRMVector2 position;
+//	public Health target;
+//
+//	public CreepOrder(int destinationID, CreepOrderType orderType, DTRMVector2 position, Health target) : base (destinationID) {
+//
+//		creepOrder = orderType;
+//
+//		if (orderType == CreepOrderType.Move ||
+//			orderType == CreepOrderType.MoveAttack ||
+//			orderType == CreepOrderType.Patrol )
+//			this.position = position;
+//
+//		if (orderType == CreepOrderType.Attack)
+//			this.target = target;
+//
+//	}
+//
+//}
 
 public class CreepController : ActorController, IVisionListener, ILegsListener, IAttackListener, IOrderReceiver {
 
@@ -384,41 +384,41 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 
 	}
 
-	public void ReceiveOrder(CreepOrder order) {
-
-		switch (order.creepOrder) {
-
-			case CreepOrder.CreepOrderType.Stop:
-				Stop();
-				break;
-
-			case CreepOrder.CreepOrderType.Hold:
-				Hold();
-				break;
-
-			case CreepOrder.CreepOrderType.Move:
-				Move(order.position);
-				break;
-
-			case CreepOrder.CreepOrderType.MoveAttack:
-				MoveAttack(order.position);
-				break;
-
-			case CreepOrder.CreepOrderType.Attack:
-				Attack(order.target);
-				break;
-
-			case CreepOrder.CreepOrderType.Patrol:
-				Patrol(order.position);
-				break;
-
-			default:
-				Debug.LogError("Unknown order!");
-				break;
-
-		}
-
-	}
+//	public void ReceiveOrder(CreepOrder order) {
+//
+//		switch (order.creepOrder) {
+//
+//			case CreepOrder.CreepOrderType.Stop:
+//				Stop();
+//				break;
+//
+//			case CreepOrder.CreepOrderType.Hold:
+//				Hold();
+//				break;
+//
+//			case CreepOrder.CreepOrderType.Move:
+//				Move(order.position);
+//				break;
+//
+//			case CreepOrder.CreepOrderType.MoveAttack:
+//				MoveAttack(order.position);
+//				break;
+//
+//			case CreepOrder.CreepOrderType.Attack:
+//				Attack(order.target);
+//				break;
+//
+//			case CreepOrder.CreepOrderType.Patrol:
+//				Patrol(order.position);
+//				break;
+//
+//			default:
+//				Debug.LogError("Unknown order!");
+//				break;
+//
+//		}
+//
+//	}
 
 	//
 	//

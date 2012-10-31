@@ -2,12 +2,12 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-[RequireComponent(typeof(DTRMObjectManager))]
+[RequireComponent(typeof(ObjectManager))]
 
 public class DTRM : MonoBehaviour {
 
 	public static DTRM singleton;
-	private DTRMObjectManager objectManager;
+	private ObjectManager objectManager;
 
 	void Start() {
 
@@ -15,25 +15,19 @@ public class DTRM : MonoBehaviour {
 		// Getting components
 		//
 
-		objectManager = GetComponent<DTRMObjectManager>();
+		objectManager = GetComponent<ObjectManager>();
 		objectManager.Gather();
 
 		singleton = this;
 
 	}
 
-	//
-	// Players & Network
-	//
+	#region Players and Network
 
 	private const int thisPlayerID = 1; // THIS IS PLACEHOLDER CODE!!! TODO : REMOVE НАХУЙ
 	private const int maxPlayers = 10;
-	public int activePlayers = 2; // TODO: IMPLEMENT
-	public bool singlePlayer {
-
-		get { return ( gameType == GameType.Single ); }
-
-	}
+	public int activePlayers = 1; // TODO: IMPLEMENT
+	
 	private string serverIP = "127.0.0.1";
 
 	private enum GameType {
@@ -51,6 +45,7 @@ public class DTRM : MonoBehaviour {
 	private void OnServerInitialized() {
 
 		gameType = GameType.Server;
+		
 
 	}
 
@@ -59,16 +54,41 @@ public class DTRM : MonoBehaviour {
 		gameType = GameType.Client;
 
 	}
+	
+	private void OnPlayerConnected(NetworkPlayer player) {
+		
+		networkView.RPC("ActivePlayersIncrement", RPCMode.All );
+		
+	}
+	
+	private void OnPlayerDisconnected(NetworkPlayer player) {
+		
+		networkView.RPC("ActivePlayersDecrement", RPCMode.All );
+	}
+	
+	[RPC]
+	private void ActivePlayersIncrement() {
+		
+		activePlayers++;
+		
+	}
+	
+	[RPC]
+	private void ActivePlayersDecrement() {
+		
+		activePlayers--;
+		
+	}
 
 	private void OnFailedToConnect(NetworkConnectionError connectionError) {
 
 		this.connectionError = connectionError.ToString();
 
 	}
+	
+	#endregion
 
-	//
-	// Time
-	//
+	#region Time & Gameflow
 
 	private FixedPoint _dtrmTime = new FixedPoint(0);
 	public FixedPoint dtrmTime {
@@ -87,7 +107,7 @@ public class DTRM : MonoBehaviour {
 	private const float TIME_STEP = 0.05f; // how much does it take to complete one step in real time
 	private FixedPoint DTRM_STEP = new FixedPoint(TIME_STEP); // how much does it take to complete one step in dtrm time
 
-	private int _currentStep = 0;
+	private int _currentStep = -1;
 	public int currentStep {
 
 		get { return _currentStep; }
@@ -105,6 +125,21 @@ public class DTRM : MonoBehaviour {
 		_dtrmTime += deltaTime;
 		_currentStep++;
 
+	}
+	
+	private void GameStart() {
+		
+		if (gameType == GameType.Server) {
+			
+			foreach(NetworkPlayer player in Network.connections)
+				HeroOrderManager.singleton.CreateOrder(player);
+			
+			HeroOrderManager.singleton.CreateOrder(Network.player);
+			
+		}
+		
+		_currentStep++;
+		
 	}
 
 	private void Step() {
@@ -125,7 +160,7 @@ public class DTRM : MonoBehaviour {
 		objectManager.SendUpdate();
 
 		// put hash code
-		if (!singlePlayer)
+		if (gameType != GameType.Single)
 			networkView.RPC( "PutHashCode", RPCMode.All, currentStep, Network.player, GetHashCode() );
 
 	}
@@ -149,10 +184,10 @@ public class DTRM : MonoBehaviour {
 		}
 
 	}
+	
+	#endregion
 
-	//
-	// Debug GUI
-	//	
+	#region GUI
 
 	public void OnGUI() {
 
@@ -204,19 +239,28 @@ public class DTRM : MonoBehaviour {
 
 		if ( GUI.Button( new Rect(10, 10, 150, 20), "Step" ) )
 			Step();
-
-		string playPauseLabel = playing ? "Pause" : "Play";
-
-		if ( GUI.Button( new Rect(170, 10, 150, 20), playPauseLabel ) )
-			playing = !playing;
+		
+		if (currentStep == -1) {
+			
+			if ( GUI.Button( new Rect(170, 10, 150, 20), "Start game" ) )
+				GameStart ();
+			
+		} else {
+		
+			string playPauseLabel = playing ? "Pause" : "Play";
+	
+			if ( GUI.Button( new Rect(170, 10, 150, 20), playPauseLabel ) )
+				playing = !playing;
+			
+		}
 
 		GUI.Label( new Rect( 10, 40, 150, 20), "IP: " + Network.player.ipAddress + ":" + Network.player.port.ToString() );
 
 	}
-
-	//
-	// Hash control
-	//
+	
+	#endregion
+	
+	#region Hash control
 
 	private Dictionary<int, Dictionary<NetworkPlayer, int>> hashHistory = new Dictionary<int, Dictionary<NetworkPlayer, int>>();
 	private bool desync = false;
@@ -273,5 +317,7 @@ public class DTRM : MonoBehaviour {
 		return ( hashHistory[step - LAG_STEP + 1].Count == activePlayers );
 
 	}
-
+	
+	#endregion
+	
 }
