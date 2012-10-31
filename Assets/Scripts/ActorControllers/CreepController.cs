@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(Legs))]
 [RequireComponent(typeof(Vision))]
@@ -118,95 +119,6 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 
 	}
 
-	// public override void GetOrder(params object[] orderDetails) {
-
-	// 	if (!(orderDetails[0] is CreepState)) {
-
-	// 		Debug.LogError("Incorrect order: no order type");
-	// 		return;
-
-	// 	}
-
-	// 	CreepState newOrder = (CreepState) orderDetails[0];
-	// 	DTRMVector2 destination;
-
-	// 	switch (newOrder) {
-
-	// 		case CreepState.Idle:
-
-	// 			Debug.LogError("Incorrect order: can't order creep to be idle");
-	// 			break;
-
-	// 		case CreepState.Hold:
-
-	// 			Hold();
-	// 			break;
-
-	// 		case CreepState.Move:
-
-	// 			if (!(orderDetails[1] is DTRMVector2)) {
-
-	// 				Debug.LogError("Incorrect order: no move destination");
-	// 				return;
-
-	// 			}
-
-	// 			destination = (DTRMVector2) orderDetails[1];
-	// 			Move(destination);
-
-	// 			break;
-
-	// 		case CreepState.MoveAttack:
-
-	// 			if (!(orderDetails[1] is DTRMVector2)) {
-
-	// 				Debug.LogError("Incorrect order: no move-attack destination");
-	// 				return;
-
-	// 			}
-
-	// 			destination = (DTRMVector2) orderDetails[1];
-	// 			MoveAttack(destination);
-
-	// 			break;
-
-	// 		case CreepState.Attack:
-
-	// 			if (!(orderDetails[1] is Health)) {
-
-	// 				Debug.LogError("Incorrect order: no target");
-	// 				return;
-
-	// 			}
-
-	// 			Health newTarget = (Health) orderDetails[1];
-	// 			Attack(newTarget);
-
-	// 			break;
-
-	// 		case CreepState.Patrol:
-
-	// 			if (!(orderDetails[1] is DTRMVector2)) {
-
-	// 				Debug.LogError("Incorrect order: no patrol destination");
-	// 				return;
-
-	// 			}
-
-	// 			destination = (DTRMVector2) orderDetails[1];
-	// 			Patrol(destination);
-
-	// 			break;
-
-	// 		default:
-
-	// 			Debug.LogError("Unknown order!");
-	// 			break;
-
-	// 	}
-
-
-	// }
 
 	//
 	// Внутренние функции
@@ -216,7 +128,14 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 	// Если находит, то идет к ней и атакует, но не меняет активный приказ.
 	private bool TryFindTarget() {
 
-		foreach( Visible potentialTarget in vision.visiblesInSight ) {
+		// Debug.Log("Trying to find new target!");
+		List<Visible> potentialTargets = vision.VisiblesInSight();
+		// Debug.Log(potentialTargets.ToString());
+
+		foreach( Visible potentialTarget in potentialTargets ) {
+
+			if (potentialTarget == null)
+				continue;
 
 			Health target = potentialTarget.GetComponent<Health>();
 			if (target == null)
@@ -498,6 +417,20 @@ public class CreepController : ActorController, IVisionListener, ILegsListener, 
 				break;
 
 		}
+
+	}
+
+	//
+	//
+	//
+
+	private void OnDrawGizmos() {
+
+		if (targetVictim == null)
+			return;
+
+		Gizmos.color = Color.red;
+		Gizmos.DrawLine(transform.position, targetVictim.transform.position);
 
 	}
 

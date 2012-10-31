@@ -93,7 +93,7 @@ public class RTSLocalPlayerController : LocalPlayerController, IAttackListener, 
 
 	private void TryFindTarget() {
 
-		foreach( Visible potentialTarget in vision.visiblesInSight ) {
+		foreach( Visible potentialTarget in vision.VisiblesInSight() ) {
 
 			Health target = potentialTarget.GetComponent<Health>();
 			if (target == null)

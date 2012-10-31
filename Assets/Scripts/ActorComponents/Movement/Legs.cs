@@ -12,11 +12,11 @@ interface ILegsListener {
 
 public abstract class Legs : DTRMComponent {
 
-	public DTRMLong dtrmSqTargetPositionReach = new DTRMLong(10);
-	public DTRMLong dtrmSqTargetPositionClose = new DTRMLong(50);
-	public DTRMLong dtrmSqTargetActorReach = new DTRMLong(10);
-	public DTRMLong dtrmSqTargetActorFollow = new DTRMLong(100);
-	public DTRMLong dtrmSqTargetActorBump = new DTRMLong(10);
+	public FixedPoint dtrmSqTargetPositionReach = new FixedPoint(10);
+	public FixedPoint dtrmSqTargetPositionClose = new FixedPoint(50);
+	public FixedPoint dtrmSqTargetActorReach = new FixedPoint(10);
+	public FixedPoint dtrmSqTargetActorFollow = new FixedPoint(100);
+	public FixedPoint dtrmSqTargetActorBump = new FixedPoint(10);
 
 	private Component[] legsListeners;
 

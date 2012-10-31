@@ -11,7 +11,7 @@ interface IVisibleListener {
 
 public static class VisibleGrid {
 
-	public static DTRMLong gridStep = new DTRMLong(10);
+	public static FixedPoint gridStep = new FixedPoint(10);
 	public static int gridSize = 25;
 	public static List<Visible>[,] grid = new List<Visible> [gridSize, gridSize];
 	private static bool init = false;
