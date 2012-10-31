@@ -10,5 +10,6 @@ Temp
 *.sublime-workspace
 *.csproj
 *.pidb
+*.app*
 
 .DS_Store
