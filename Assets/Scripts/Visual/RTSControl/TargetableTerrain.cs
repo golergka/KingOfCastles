@@ -7,16 +7,15 @@ public class TargetableTerrain : MonoBehaviour {
 
 	void OnMouseUpAsButton() {
 
-		// Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-		// RaycastHit hit;
+		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		RaycastHit hit;
 
-		// if (Physics.Raycast(ray, out hit) ) {
+		if (Physics.Raycast(ray, out hit) ) {
 
-		// 	DTRMVector2 targetPosition = new DTRMVector2( TerrainCoordinates.GlobalToTerrain(hit.point) );
-		// 	PlayerOrder newOrder = new PlayerOrder(targetPosition);
-		// 	DTRM.singleton.PutOrder(newOrder);
+		 	DTRMVector2 targetPosition = new DTRMVector2( TerrainCoordinates.GlobalToTerrain(hit.point) );
+		 	HeroOrderManager.singleton.MoveOrder(targetPosition);
 
-		// }
+		}
 
 	}
 
