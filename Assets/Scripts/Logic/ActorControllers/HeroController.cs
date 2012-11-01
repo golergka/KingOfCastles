@@ -35,8 +35,6 @@ public class HeroController : ActorController, IAttackListener, ILegsListener {
 	#region Controlling player
 	
 	public void GiveTarget(Health targetVictim) {
-		
-		Debug.Log ("Got target health!");
 
 		if (targetVictim == null)
 			return;
