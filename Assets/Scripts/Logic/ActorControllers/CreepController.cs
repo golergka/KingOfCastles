@@ -39,7 +39,7 @@ using System.Collections.Generic;
 //
 //}
 
-public class CreepController : ActorController, IVisionListener, ILegsListener, IAttackListener, IOrderReceiver {
+public class CreepController : ActorController, IVisionListener, ILegsListener, IAttackListener {
 
 	// ссылки на компоненты
 	private Legs legs;

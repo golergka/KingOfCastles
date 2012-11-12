@@ -51,11 +51,37 @@ public class ObjectManager : MonoBehaviour {
 	}
 
 	public void SendUpdate() {
+		
+		updatePaused = false;
+		updateCacheIndex = 0;
+		ResumeUpdate();
 
-		foreach( DTRMComponent component in componentCache )
-			if (component.gameObject.active)
-				component.DTRMUpdate();
-
+	}
+	
+	private int updateCacheIndex = 0;
+	private bool updatePaused = false;
+	
+	public void PauseUpdate() {
+		
+		updatePaused = true;
+		
+	}
+	
+	public void ResumeUpdate() {
+		
+		updatePaused = false;
+		while (updateCacheIndex < componentCache.Length) {
+			
+			// looping
+			componentCache[updateCacheIndex].DTRMUpdate();
+			updateCacheIndex++;
+			
+			// detecting pause
+			if (updatePaused)
+				return;
+			
+		}
+		
 	}
 
 	public override int GetHashCode() {

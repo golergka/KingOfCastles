@@ -7,7 +7,7 @@ public class HeroManager : MonoBehaviour {
 	private List<HeroController> freeHeroPool;
 	public static HeroManager singleton;
 	
-	private void Start() {
+	private void Awake() {
 		
 		singleton = this;
 		freeHeroPool = new List<HeroController> ( GetComponentsInChildren<HeroController>() );

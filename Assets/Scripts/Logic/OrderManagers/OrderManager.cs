@@ -3,12 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public interface IOrderReceiver {
-
-	void ReceiveOrder(Order order );
-
-}
-
 public abstract class Order {
 
 	private DTRMComponent _destination;
